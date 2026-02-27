@@ -530,3 +530,8 @@ if (!ui.selectRepair.value && sistema.list().length > 0) {
 }
 if (ui.selectRepair.value) StorageRepo.saveSelected(ui.selectRepair.value);
 render();
+
+
+
+
+
