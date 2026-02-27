@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario de Kits</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.25.0/dist/bootstrap-table.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="p-5 mb-4 bg-body-tertiary rounded-3">
+            <div class="container-fluid py-5">
+                <h1 class="display-5 fw-bold" id="txtFranquicia"></h1>
+                <h1 class="display-5 fw-bold clsTitulo">Sistema de Inventarios</h1>
+                <p class="col-md-8 fs-4" id="txtColeccionista"></p>
+                <p name="dato">Dato 1</p>
+                <p>Dato 2</p>
+                <a href="http://www.x-codec.net">X-codec</a>
+                <!-- <p>Dato 3</p> -->
+                <div class="btn-group" role="group" aria-label="Acciones">
+                    <button id="btnAgregar">Agregar</button>
+                     <button class="btn btn-danger" id="btnBorrar">Borrar Todo</button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <table id="table" class="table" data-detail-view="true" data-detail-formatter="detailFormatter">
+            <thead>
+                <tr>
+                    <th data-field="nombre">Nombre</th>
+                    <th data-field="descripcion">Descripcion</th>
+                    <th data-field="escala">Escala</th>
+                    
+                    <th data-field="operate" data-formatter="accionFormatter" data-events="kitsEvents">Acciones</th>
+                </tr>
+            </thead>
+        </table>
+        </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js"
+        integrity="sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js"
+        integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y"
+        crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.25.0/dist/bootstrap-table.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="script.js"></script>
+    <script>
+        let objParametros = {
+            franquicia: "GUNDAM",
+            coleccionista: "Roberto Pineda"
+        }
+        Inventario.init(objParametros);
+    </script>
+</body>
+</html>

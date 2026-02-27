@@ -622,27 +622,3 @@ for (let i = 0; i < cantidad; i++) {
     console.log("Fin de ejercicio 18");
 }
 
-function ejercicio19(){
-
-    console.log("Inicio de ejercicio 19");
-
-    console.log("Fin de ejercicio 19");
-}
-
-function ejercicio20(){
-
-    console.log("Inicio de ejercicio 20");
-console.log("Fin de ejercicio 20");
-}
-
-function ejercicio21(){
-
-    console.log("Inicio de ejercicio 21");
-console.log("Fin de ejercicio 21");
-}
-
-function ejercicio22(){
-
-    console.log("Inicio de ejercicio 22");
-console.log("Fin de ejercicio 22");
-}

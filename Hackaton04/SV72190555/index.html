@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hackatón 04</title>
+
+    <!-- Fuente recomendada -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- TU CSS FRUTIGER AERO -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+
+    <h1 style="text-align:center;">DESARROLLO DE LA HACKATÓN 4 - SV72190555</h1>
+    <p style="text-align:center; opacity:.7; margin-top:-15px;">
+        Ejercicios practicos de JavaScript y HTTP — Nuevas funcionalidades ES6 y metodos de objetos nativos
+    </p>
+    
+
+    <div class="contenedor card gloss">
+        <h1>Reto 1</h1>
+        <h2>Ejercicios de HTTP</h2>
+        <p>Selecciona un ejercicio</p>
+
+        <div class="grid">
+            <!-- 7 botones -->
+            <button onclick="ejecutarEjercicio(1.1)">Ejercicio 01</button>
+            
+            <button onclick="ejecutarEjercicio(1.2)">Ejercicio 02</button>
+            <button onclick="ejecutarEjercicio(1.3)">Ejercicio 03</button>
+            <button onclick="ejecutarEjercicio(1.4)">Ejercicio 04</button>
+            <button onclick="ejecutarEjercicio(1.5)">Ejercicio 05</button>
+            <button onclick="ejecutarEjercicio(1.6)">Ejercicio 06</button>
+            <button onclick="ejecutarEjercicio(1.7)">Ejercicio 07</button>
+            
+        </div>
+
+        <br>
+
+    </div>
+
+    <!-- ZONA DE EJERCICIO INCRUSTADA -->
+    <div id="zona-ejercicio" class="contenedor card gloss" style="display:none;"></div>
+
+    <!-- == reto 2 == -->
+    
+    <div class="contenedor card gloss">
+        <h1>Reto 2</h1>
+        <h2>Ejercicios de JavaScript</h2>
+        <p>Selecciona un ejercicio</p>
+
+        <div class="grid">
+            <!-- 22 botones -->
+
+            <!--<button onclick="ejecutar(NombreEnJs)">NombreBoton </button>-->
+
+            <button onclick="ejecutarEjercicio(2.1)">Ejercicio 01</button>
+            <button onclick="ejecutarEjercicio(2.2)">Ejercicio 02</button>
+            <button onclick="ejecutarEjercicio(2.3)">Ejercicio 03</button>
+            <button onclick="ejecutarEjercicio(2.4)">Ejercicio 04</button>
+            <button onclick="ejecutarEjercicio(2.5)">Ejercicio 05</button>
+            <button onclick="ejecutarEjercicio(2.6)">Ejercicio 06</button>
+            <button onclick="ejecutarEjercicio(2.7)">Ejercicio 07</button>
+            <button onclick="ejecutarEjercicio(2.8)">Ejercicio 08</button>
+            <button onclick="ejecutarEjercicio(2.9)">Ejercicio 09</button>
+            <button onclick="ejecutarEjercicio(2.10)">Ejercicio 10</button>
+
+            <button onclick="ejecutarEjercicio(2.11)">Ejercicio 11</button>
+            <button onclick="ejecutarEjercicio(2.12)">Ejercicio 12</button>
+            <button onclick="ejecutarEjercicio(2.13)">Ejercicio 13</button>
+            <button onclick="ejecutarEjercicio(2.14)">Ejercicio 14</button>
+            <button onclick="ejecutarEjercicio(2.15)">Ejercicio 15</button>
+            <button onclick="ejecutarEjercicio(2.16)">Ejercicio 16</button>
+            <button onclick="ejecutarEjercicio(2.17)">Ejercicio 17</button>
+            <button onclick="ejecutarEjercicio(2.18)">Ejercicio 18</button>
+            <button onclick="ejecutarEjercicio(2.19)">Ejercicio 19</button>
+            <button onclick="ejecutarEjercicio(2.20)">Ejercicio 20</button>
+
+            <button onclick="ejecutarEjercicio(2.21)">Ejercicio 21</button>
+            <button onclick="ejecutarEjercicio(2.22)">Ejercicio 22</button>
+            
+        </div>
+
+        <br>
+        <button onclick="limpiarTodo()">Limpiar todo</button>
+
+    </div>
+
+
+
+    <!-- ========================= -->
+    <!-- LÓGICA DE CARGA -->
+    <!-- ========================= -->
+    <script>
+        function ejecutarEjercicio(numero) {
+            // Convierte 1.1 -> ejercicio101, 2.10 -> ejercicio210, etc.
+            const partes = String(numero).split(".");
+            const reto = partes[0];
+            const ej   = (partes[1] || "0").padStart(2, "0");
+            const nombreFuncion = `ejercicio${reto}${ej}`;
+
+            if (typeof window[nombreFuncion] === "function") {
+                window[nombreFuncion]();
+            } else {
+                const zona = document.getElementById("zona-ejercicio");
+                zona.style.display = "block";
+                zona.innerHTML = `
+                    <h2>⚠️ Ejercicio no implementado</h2>
+                    <p>La función <strong>${nombreFuncion}</strong> aún no existe.</p>
+                    <button onclick="limpiarTodo()">Cerrar</button>
+                `;
+                zona.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+
+        function limpiarTodo() {
+            const zona = document.getElementById("zona-ejercicio");
+            if (zona) {
+                zona.style.display = "none";
+                zona.innerHTML = "";
+            }
+        }
+    </script>
+
+
+
+
+
+    <!-- TU ARCHIVO JS -->
+    <script src="main.js"></script>
+        <div class="divider"></div>
+    <footer style="text-align:center; margin-top:40px; opacity:.6;">
+        Desarrollado por javier Gonzales • 2026
+    </footer>
+</body>
+
+</html>

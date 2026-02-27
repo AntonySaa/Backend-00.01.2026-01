@@ -62,6 +62,7 @@ const Reserva = function () {
     }
 
     function dibujarCheckOut(objReserva) {
+        console.log(objReserva);
         $("#idaNombre").val(objReserva.avionIda.arrPasajeros[0].nombres);
         $("#idaApellido").val(objReserva.avionIda.arrPasajeros[0].apellidos);
         $("#idaFecha").val(objReserva.fechaIda);
