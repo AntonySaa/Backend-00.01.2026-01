@@ -1,0 +1,34 @@
+
+    * {
+      font-family: "Syne", sans-serif;
+    }
+
+    code {
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    @keyframes fadeSlide {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .step-panel {
+      animation: fadeSlide 0.35s ease;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #f2f2f9;
+      border-radius: 9px;
+    }

@@ -177,63 +177,63 @@ const Inventario = function () {
     }
 }();
 
-function IsCustomCheck(event) {
-    console.log("Cambio el Check");
-    if (event.checked) {
-        $("#divCustom").toggle(1500);
-    } else {
-        $("#divCustom").toggle(1500);
-    }
-}
-
-
-function accionFormatter(value, row, index){
-return [
-    `<a class="edit" href="javascript:void(0)" title="edit">`,
-    `<i class="fas fa-edit"> </i> Editar</a>`,
-    `<a class="delete" href="javascript:void(0)" title="delete">`,
-    `<i class="fas fa-trash"> </i> Borrar</a>`
-].join('');
-}
-
-window.kitsEvents = {
-    'click .edit': (e,value, row,index)=>{
-        console.log("Editar")
-    },
-    'click .delete': (e,value, row,index)=>{
-        let inx = arrKits.indexOf(row);
-        if(inx > -1) arrKits.splice(inx,1);
-
-        localStorage.setItem('inventarioKits', JSON.stringify(arrKits));
-        $table.bootstrapTable('load', arrKits);
-    }
-
-}
-
-function detailFormatter(index, row) {
-    console.log(row);
-    let html = [];
-    $.each(row, (key, value)=>{
-        switch (key) {
-            case "img":
-                html.push(`<img src="img/${value}.webp" width="300px" />`)
-                break;
-            case "isCustom":
-                if(value){
-                    let htmlStr = `<b>MODIFICACIONES</b><ul>`;
-                    console.log(row.custom)
-                    $.each(row.custom, (a,b)=>{
-                        htmlStr += `<li>${b}</li>`
-                    })
-                    htmlStr += `</ul>`
-                    html.push(`<p>${htmlStr}</p>`)
-                }
-            case "custom":
-                break;
-            default:
-                html.push(`<p><b> ${key.toUpperCase()}: </b> ${value} </p> `)
-                break;
+    function IsCustomCheck(event) {
+        console.log("Cambio el Check");
+        if (event.checked) {
+            $("#divCustom").toggle(1500);
+        } else {
+            $("#divCustom").toggle(1500);
         }
-    })
-    return html.join('');
-}
+    }
+
+
+    function accionFormatter(value, row, index){
+    return [
+        `<a class="edit" href="javascript:void(0)" title="edit">`,
+        `<i class="fas fa-edit"> </i> Editar</a>`,
+        `<a class="delete" href="javascript:void(0)" title="delete">`,
+        `<i class="fas fa-trash"> </i> Borrar</a>`
+    ].join('');
+    }
+
+    window.kitsEvents = {
+        'click .edit': (e,value, row,index)=>{
+            console.log("Editar")
+        },
+        'click .delete': (e,value, row,index)=>{
+            let inx = arrKits.indexOf(row);
+            if(inx > -1) arrKits.splice(inx,1);
+
+            localStorage.setItem('inventarioKits', JSON.stringify(arrKits));
+            $table.bootstrapTable('load', arrKits);
+        }
+
+    }
+
+    function detailFormatter(index, row) {
+        console.log(row);
+        let html = [];
+        $.each(row, (key, value)=>{
+            switch (key) {
+                case "img":
+                    html.push(`<img src="img/${value}.webp" width="300px" />`)
+                    break;
+                case "isCustom":
+                    if(value){
+                        let htmlStr = `<b>MODIFICACIONES</b><ul>`;
+                        console.log(row.custom)
+                        $.each(row.custom, (a,b)=>{
+                            htmlStr += `<li>${b}</li>`
+                        })
+                        htmlStr += `</ul>`
+                        html.push(`<p>${htmlStr}</p>`)
+                    }
+                case "custom":
+                    break;
+                default:
+                    html.push(`<p><b> ${key.toUpperCase()}: </b> ${value} </p> `)
+                    break;
+            }
+        })
+        return html.join('');
+    }
