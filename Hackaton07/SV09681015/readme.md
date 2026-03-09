@@ -66,3 +66,76 @@ Referencias:
 
 ### VII.	Feedback
 - El docente dará feedback a los estudiantes sobre los ejercicios realizados
+
+### --------------------------------------------------------------------------------
+
+### Resolucion Ejercicio
+
+### Hackaton 07: API Gateway
+- API Gateway que centraliza consultas a múltiples APIs externas desde un frontend HTML/CSS/JS.
+
+## 🚀 Tecnologías
+
+- **Backend:** Node.js + Express
+- **HTTP Client:** Axios
+- **Variables de entorno:** dotenv
+- **Frontend:** HTML, CSS, JavaScript vanilla
+
+![Portada](Hackaton07-APIGateway.png)
+
+## 📁 Estructura
+
+```
+├── routes/
+│   └── apiRoutes.js
+├── services/
+│   ├── movieService.js
+│   ├── weatherService.js
+│   ├── pokemonService.js
+│   └── ... (12 servicios)
+├── .env
+├── server.js
+└── index.html
+```
+
+## ⚙️ Instalación
+
+```bash
+npm install
+```
+
+Crea un archivo `.env` en la raíz:
+
+```env
+TMDB_KEY=tu_clave_tmdb
+WEATHER_KEY=tu_clave_openweather
+```
+
+```bash
+node server.js
+```
+
+Abre `index.html` en el navegador.
+
+## 🔗 Endpoints
+
+| Método | Ruta                            | Descripción                       |
+|--------|---------------------------------|-----------------------------------|
+| GET    | `/api/github/:username`         | Datos de usuario GitHub           |
+| GET    | `/api/clima/:city`              | Clima de una ciudad               |
+| GET    | `/api/dolar`                    | Tipo de cambio del dólar en Perú  |
+| GET    | `/api/pokemon`                  | Lista de Pokémons                 |
+| GET    | `/api/pokemon/:name`            | Detalle de un Pokémon             |
+| GET    | `/api/rickmorty`                | Personajes de Rick and Morty      |
+| GET    | `/api/cocteles`                 | Top cócteles                      |
+| GET    | `/api/productos`                | Productos de tienda               |
+| GET    | `/api/fotos/:tema`              | Fotos por tema                    |
+| GET    | `/api/cita`                     | Cita famosa aleatoria             |
+| GET    | `/api/usuario`                  | Usuario ficticio aleatorio        |
+| GET    | `/api/peliculas`                | Top películas en cartelera        |
+| GET    | `/api/pelicula/buscar/:nombre`  | Buscar película por nombre        |
+| GET    | `/api/marte`                    | Datos de Marte (NASA)             |
+
+---
+
+Hackaton 07 IDAT · Desarrollado por Richard Asto · 2026
