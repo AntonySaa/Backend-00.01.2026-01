@@ -108,7 +108,7 @@ Crea un archivo `.env` en la raíz:
 
 ```env
 TMDB_KEY=tu_clave_tmdb
-WEATHER_KEY=tu_clave_openweather
+UNSPLASH_KEY=tu_clave_unsplash
 ```
 
 ```bash
