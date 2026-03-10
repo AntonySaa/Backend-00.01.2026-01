@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>API Gateway Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+  <section class="container">
+    <h1 style="border-bottom: 2px solid #3f170d">Hackaton 07: API Gateway</h1>
+
+    <!-- Grid de botones 5x3 -->
+    <div class="grid-buttons">
+      <button onclick="mostrarInput('github', 'Usuario de GitHub (ej: torvalds)')" class="btn">01.- Consultar los datos
+        de GitHub de un usuario especifico.</button>
+      <button onclick="mostrarInput('clima', 'Ciudad (ej: Lima, Tokyo, Paris)')" class="btn">02.- Consultar el Clima de
+        una ciudad o ubicacion especifica</button>
+      <button onclick="dolar()" class="btn">03.- Consultar el tipo de cambio del dolar en Peru</button>
+      <button onclick="pokemonLista()" class="btn">04.- Consultar la lista de Pokemones actual</button>
+      <button onclick="mostrarInput('pokemonDetalle', 'Nombre del Pokémon (ej: pikachu)')" class="btn">05.- Consultar
+        los poderes de un pokemon especifico</button>
+      <button onclick="rickLista()" class="btn">06.- Consultar los principales personajes de Rick and Morty</button>
+      <button onclick="mostrarInput('rickDetalle', 'ID del personaje (ej: 1, 2, 3)')" class="btn">07.- Consultar el
+        detalle de cada personaje de Rick and Morty</button>
+      <button onclick="cocteles()" class="btn">08.- Consultar el top 10 de bebidas y cocteles</button>
+      <button onclick="productos()" class="btn">09.- Consultar un listado de productos de una tienda</button>
+      <button onclick="mostrarInput('fotos', 'Tema de fotos (ej: nature, cars, food, space)')" class="btn">10.-
+        Consultar y traer Fotografias con un determinado tema y
+        tamaño</button>
+      <button onclick="citas()" class="btn">11.- Consultar citas famosasCitas</button>
+      <button onclick="usuario()" class="btn">12.- Consultar datos ficticios de un usuario</button>
+      <button onclick="peliculas()" class="btn">13.- Consultar el top de peliculas de estreno</button>
+      <button onclick="mostrarInput('detallePelicula', 'Nombre de película (ej: Titanic, Inception, Interstellar)')"
+        class="btn">
+        14.- Consultar el detalle de una pelicula especifica
+      </button>
+      <button onclick="marte()" class="btn">15.- Consultar datos especificos de Marte</button>
+    </div>
+
+    <div id="inputArea" class="input-area" style="display:none">
+      <input type="text" id="inputValue" class="input-consulta" placeholder="">
+      <button class="btn" onclick="ejecutarConsulta()">🔍 Consultar</button>
+    </div>
+
+    <!-- Grid principal: izquierda JSON, derecha cards -->
+    <div class="main-grid">
+      <button class="btn-title">JSON</button>
+      <button class="btn-title">VISUALIZACION</button>
+    </div>
+    <div class="main-grid">
+      <pre id="jsonOutput">{}</pre>
+      <div id="visualOutput" class="cards-grid"></div>
+    </div>
+  </section>
+  <br>
+  <div class="divider"></div>
+  <footer style="text-align:center; margin-top:40px; opacity:.6;">
+    Hackaton 07 IDAT - Desarrollado por Richard Asto • 2026
+  </footer>
+  <script>
+    const API = "http://localhost:3000/api"
+    const jsonOutput = document.getElementById("jsonOutput")
+    const visualOutput = document.getElementById("visualOutput")
+
+    function limpiar() {
+      jsonOutput.textContent = "{}"
+      visualOutput.innerHTML = ""
+    }
+
+    // 01 Usuario GitHub
+    async function github(usuario = "rpinedaec83") {  // ← agregar parámetro
+      const res = await fetch(`${API}/github/${usuario}`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+      visualOutput.innerHTML = `
+    <div class="card card-horizontal">
+    <img src="${data.avatar_url}" alt="${data.login}">
+      <div class="card-info">
+        <br><br>
+        <h2>${data.login}</h2>
+        <h2>${data.name}</h2>
+        <p>${data.bio}</p>
+        <p>${data.company}</p>
+        <p>Repositorios: ${data.public_repos}</p>
+        <p>${data.html_url}</p>
+        <p>Seguidores: ${data.followers}</p>
+        <p>${data.location}</p>
+      </div>
+    </div>
+  `
+      ocultarInput()
+    }
+    // 02.- Clima de la ciudad
+    async function clima(ciudad = "Lima") {
+      const res = await fetch(`${API}/clima/${ciudad}`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+      visualOutput.innerHTML = `
+    <div class="card card-horizontal">
+      <div class="card-col">
+        <h2>${data.ciudad}</h2>
+        <p>${data.temperatura}°C</p>
+        <p>${data.clima}</p>
+      </div>
+    </div>
+  `
+      ocultarInput()
+    }
+
+    // 03.- tipo de cambio del Dólar
+    async function dolar() {
+      const res = await fetch(`${API}/dolar`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 3)
+      visualOutput.innerHTML = `
+    <div class="card card-horizontal">
+      <div class="card-col">
+        <h2>Dólar en Perú</h2>
+        <p>${data.data.tipo_cambio} PEN</p>
+        <p>${data.data.fecha_actualizacion}</p>
+      </div>
+    </div>
+  `
+    }
+
+
+    // 04.- Pokemon Listado
+    async function pokemonLista() {
+      const res = await fetch(`${API}/pokemon`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+
+      const detalles = await Promise.all(
+        data.results.slice(0, 50).map(p =>
+          fetch(`${API}/pokemon/${p.name}`).then(r => r.json())
+        )
+      )
+
+      detalles.forEach(pokemon => {
+        const img = pokemon.sprites.other["official-artwork"].front_default
+        visualOutput.innerHTML += `
+      <div class="card">
+        <img src="${img}" alt="${pokemon.name}" width="120" />
+        <h2>${pokemon.name}</h2>
+        <p>#${pokemon.id}</p>
+      </div>
+    `
+      })
+    }
+
+    // 05.- Poderes Pokemon
+    async function pokemonDetalle(nombre = "pikachu") {
+      const res = await fetch(`${API}/pokemon/${nombre}`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+
+      const img = data.sprites.other["official-artwork"].front_default
+      const tipos = data.types.map(t => t.type.name).join(", ")
+      const stats = data.stats.map(s => `<p>${s.stat.name}: <strong>${s.base_stat}</strong></p>`).join("")
+
+      visualOutput.innerHTML = `
+    <div class="card card-horizontal">
+      <img src="${img}" alt="${data.name}" width="200" />
+      <div class="card-info">
+        <h2>${data.name} — #${data.id}</h2>
+        <p>Altura: ${data.height} | Peso: ${data.weight}</p>
+        <p>Tipos: ${tipos}</p>
+        ${stats}
+      </div>
+    </div>
+  `
+      ocultarInput()
+    }
+
+
+    // 06.- Lista Rick & Morty
+    async function rickLista() {
+      const res = await fetch(`${API}/rickmorty`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+      data.results.slice(0, 8).forEach(c => {
+        visualOutput.innerHTML += `
+      <div class="card">
+        <img src="${c.image}" alt="${c.name}">
+        <h2>${c.name}</h2>
+      </div>
+    `
+      })
+    }
+
+    // 07.- Detalle Personaje de Rick and Morty
+    async function rickDetalle(id = "1") {
+      const res = await fetch(`${API}/rickmorty/${id}`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+      visualOutput.innerHTML = `
+    <div class="card card-horizontal">
+      <img src="${data.image}" alt="${data.name}">
+      <div class="card-info">
+        <h2>${data.name}</h2>
+        <p>🧬 Especie: ${data.species}</p>
+        <p>⚧ Género: ${data.gender}</p>
+        <p>💓 Estado: ${data.status}</p>
+        <p>🌍 Origen: ${data.origin.name}</p>
+        <p>📍 Ubicación: ${data.location.name}</p>
+      </div>
+    </div>
+  `
+      ocultarInput()
+    }
+
+
+    // 08.- Cocteles
+    async function cocteles() {
+      const res = await fetch(`${API}/cocteles`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+      if (!data.drinks) { visualOutput.textContent = "No se encontraron cocteles"; return }
+      data.drinks.slice(0, 10).forEach(c => {
+        visualOutput.innerHTML += `
+      <div class="card">
+        <img src="${c.strDrinkThumb}" alt="${c.strDrink}">
+        <h3>${c.strDrink}</h3>
+      </div>
+    `
+      })
+    }
+
+    // 09.- Productos
+    async function productos() {
+      const res = await fetch(`${API}/productos`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+      data.slice(0, 12).forEach(p => {
+        visualOutput.innerHTML += `
+      <div class="card">
+        <img src="${p.image}" alt="${p.title}">
+        <h3>${p.title}</h3>
+        <p>$${p.price}</p>
+      </div>
+    `
+      })
+    }
+    // 10.- fotos
+    async function fotos(tema = "nature") {
+      const res = await fetch(`${API}/fotos/${tema}`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+      data.forEach(f => {
+        visualOutput.innerHTML += `
+      <div class="card">
+        <img src="${f.urls.small}" alt="Foto">
+        <p>${f.alt_description}</p>
+      </div>
+    `
+      })
+      ocultarInput()
+    }
+
+    // 11.- Citas
+    async function citas() {
+      const res = await fetch(`${API}/cita`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+      visualOutput.innerHTML = `
+    <div class="card card-horizontal">
+      <div class="card-col">
+        <p>"${data.cita}"</p>
+        <b>— ${data.autor}</b>
+      </div>
+    </div>
+  `
+    }
+
+    // 12.- Usuario Ficticio
+    async function usuario() {
+      const res = await fetch(`${API}/usuario`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+      const u = data.results[0]
+      visualOutput.innerHTML = `
+    <div class="card card-horizontal">
+      <img src="${u.picture.large}" alt="${u.name.first}">
+      <div class="card-info">
+        <br><br><br>
+        <h2>${u.name.first} ${u.name.last}</h2>
+        <p>Email: ${u.email}</p>
+        <p>Phone: ${u.phone}</p>
+        <p>City - Country: ${u.location.city} — ${u.location.country}</p>
+        <p>Date of Birth: ${u.dob.date}</p>
+        <p>Age: ${u.dob.age}</p>
+      </div>
+    </div>
+  `
+    }
+
+    // 1️⃣3️⃣ Top Películas
+    async function peliculas() {
+      try {
+        const res = await fetch(`${API}/peliculas`)
+        const data = await res.json()
+        limpiar()
+        jsonOutput.textContent = JSON.stringify(data, null, 2)
+        data.slice(0, 12).forEach(p => {
+          visualOutput.innerHTML += `
+        <div class="card">
+          <img src="${p.poster_path ? "https://image.tmdb.org/t/p/w500" + p.poster_path : "placeholder.jpg"}" alt="${p.title}">
+          <h3>${p.title}</h3>
+          <p>${p.release_date}</p>
+          <button onclick="detallePelicula(${p.id})">Ver detalle</button>
+        </div>
+      `
+        })
+      } catch (err) {
+        visualOutput.textContent = "Error cargando películas: " + err
+      }
+    }
+
+    async function detallePelicula(nombre = "Fight Club") {
+      try {
+        const res = await fetch(`${API}/pelicula/buscar/${encodeURIComponent(nombre)}`);
+        if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+        const data = await res.json();
+        limpiar();
+        jsonOutput.textContent = JSON.stringify(data, null, 2);
+        visualOutput.innerHTML = `
+      <div class="card card-horizontal">
+        <img 
+          src="https://image.tmdb.org/t/p/w500${data.poster_path}" 
+          alt="${data.title}"
+          onerror="this.src='/placeholder.jpg'"
+        >
+        <div class="card-info">
+          <h2>${data.title}</h2>
+          ${data.tagline ? `<p><em>${data.tagline}</em></p>` : ""}
+          <p>${data.overview}</p>
+          <p>⭐ ${data.vote_average?.toFixed(1)} / 10</p>
+          <p>Año: ${data.release_date?.split("-")[0]}</p>
+        </div>
+      </div>
+    `;
+        ocultarInput();
+      } catch (error) {
+        limpiar();
+        visualOutput.innerHTML = `
+      <div class="error">
+        <p>⚠️ ${error.message}</p>
+      </div>
+    `;
+      }
+    }
+
+
+
+    /*
+    async function detallePelicula(id = "550") {
+      const res = await fetch(`${API}/pelicula/${id}`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+      visualOutput.innerHTML = `
+        <div class="card card-horizontal">
+          <img src="https://image.tmdb.org/t/p/w500${data.poster_path}" alt="${data.title}">
+          <div class="card-info">
+            <h2>${data.title}</h2>
+            <p>${data.tagline}</p>
+            <p>${data.overview}</p>
+            <p>⭐ ${data.vote_average}</p>
+            <p>Año: ${data.release_date}</p>
+          </div>
+        </div>
+      `
+      ocultarInput()
+    }
+    */
+    async function marte() {
+      const res = await fetch(`${API}/marte`)
+      const data = await res.json()
+      limpiar()
+      jsonOutput.textContent = JSON.stringify(data, null, 2)
+      visualOutput.innerHTML = `
+        <div class="card card-horizontal">
+          <img src="${data.imagen}" alt="${data.titulo}">
+          <div class="card-info">
+            <h2>${data.titulo}</h2>
+            <p class="fecha">${data.fecha}</p>
+            <p>${data.descripcion}</p>
+          </div>
+        </div>
+      `
+    }
+
+    // ejercicios que requieren input
+    const ejerciciosConInput = {
+      github: { placeholder: "Usuario de GitHub (ej: torvalds)" },
+      clima: { placeholder: "Ciudad (ej: Lima, Tokyo, Paris)" },
+      rickDetalle: { placeholder: "ID o nombre del personaje (ej: 1)" },
+      pokemonDetalle: { placeholder: "Nombre del Pokémon (ej: pikachu)" },
+      detallePelicula: { placeholder: "Nombre de la película (ej: Inception)" },
+      fotos: { placeholder: "Tema de fotos (ej: nature, cars, food, space)" },
+    }
+
+    let ejercicioActivo = null
+
+    function mostrarInput(ejercicio, placeholder) {
+      ejercicioActivo = ejercicio
+      const area = document.getElementById("inputArea")
+      const input = document.getElementById("inputValue")
+      input.placeholder = placeholder
+      input.value = ""
+      area.style.display = "flex"
+      input.focus()
+    }
+
+    function ocultarInput() {
+      document.getElementById("inputArea").style.display = "none"
+      ejercicioActivo = null
+    }
+
+    async function ejecutarConsulta() {
+      const valor = document.getElementById("inputValue").value.trim()
+      if (!valor) return
+
+      switch (ejercicioActivo) {
+        case "github": await github(valor); break
+        case "clima": await clima(valor); break
+        case "rickDetalle": await rickDetalle(valor); break
+        case "pokemonDetalle": await pokemonDetalle(valor); break
+        case "detallePelicula": await detallePelicula(valor); break
+        case "fotos": await fotos(valor); break
+      }
+    }
+
+    // Enter también ejecuta
+    document.getElementById("inputValue").addEventListener("keydown", e => {
+      if (e.key === "Enter") ejecutarConsulta()
+    })
+
+  </script>
+
+</body>
+
+</html>

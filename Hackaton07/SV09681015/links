@@ -1,0 +1,18 @@
+
+| Endpoint                                   | API          |
+| ------------------------------------------ | ------------ |
+| `http://localhost:3000/api/github/:user`   | GitHub       |
+| `http://localhost:3000/api/clima/:ciudad`  | OpenWeather  |
+| `http://localhost:3000/api/dolar`          | Tipo cambio  |
+| `http://localhost:3000/api/pokemon`        | Pokemon      |
+| `http://localhost:3000/api/pokemon/pikachu`| Pokemon      |
+| `http://localhost:3000/api/rickmorty`      | Rick & Morty |
+| `http://localhost:3000/api/rickmorty/1`    | Rick & Morty |
+| `http://localhost:3000/api/productos`      | FakeStore    |
+| `http://localhost:3000/api/cocteles`       | CocktailDB   |
+| `http://localhost:3000/api/usuario`        | RandomUser   |
+| `http://localhost:3000/api/fotos/gato`     | Unsplash     |
+| `http://localhost:3000/api/cita`           | Quotes       |
+| `http://localhost:3000/api/peliculas`      | TMDB         |
+| `http://localhost:3000/api/pelicula/550`   | TMDB         |
+| `http://localhost:3000/api/marte`          | NASA         |
