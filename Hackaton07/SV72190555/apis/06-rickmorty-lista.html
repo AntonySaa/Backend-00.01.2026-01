@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Rick & Morty Lista</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:monospace;background:#fff;color:#111;max-width:500px;margin:40px auto;padding:0 20px;}
+  a{color:#555;font-size:12px;text-decoration:none;}a:hover{color:#000;}
+  h1{font-size:15px;margin:16px 0 4px;} .sub{font-size:11px;color:#999;margin-bottom:20px;}
+  .row{display:flex;gap:8px;margin-bottom:16px;}
+  input{border:1px solid #ccc;padding:5px 8px;font-family:monospace;font-size:12px;outline:none;width:180px;}
+  input:focus{border-color:#000;}
+  button{border:1px solid #000;background:#fff;padding:5px 12px;font-family:monospace;font-size:12px;cursor:pointer;}
+  button:hover{background:#000;color:#fff;}
+  #info{font-size:11px;color:#999;margin-bottom:10px;}
+  #out{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:11px;margin-top:8px;}
+  .ch{border:1px solid #f0f0f0;border-radius:4px;overflow:hidden;cursor:pointer;}
+  .ch:hover{border-color:#999;}
+  .ch img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+  .ch .info{padding:5px;}
+  .ch .name{font-weight:bold;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ch .status{font-size:9px;color:#999;}
+  .pag{display:flex;gap:8px;margin-top:12px;}
+  .err{color:red;}
+</style>
+</head><body>
+  <a href="../index.html">← volver</a>
+  <h1>Rick & Morty · Lista</h1>
+  <p class="sub">rickandmortyapi.com</p>
+  <div class="row">
+    <input id="q" placeholder="buscar por nombre (opcional)"/>
+    <button onclick="run(1)">Buscar</button>
+  </div>
+  <div id="info"></div>
+  <div id="out">cargando...</div>
+  <div id="pag" class="pag"></div>
+<script>
+  document.getElementById("q").onkeydown = e => e.key==="Enter" && run(1);
+  async function run(page){
+    const q = document.getElementById("q").value.trim();
+    document.getElementById("out").innerHTML="cargando...";
+    try{
+      const url=`https://rickandmortyapi.com/api/character?page=${page}${q?"&name="+encodeURIComponent(q):""}`;
+      const d=await fetch(url).then(r=>r.json());
+      if(d.error) throw new Error(d.error);
+      document.getElementById("info").textContent=`Pág ${page} de ${d.info.pages} · ${d.info.count} personajes`;
+      document.getElementById("out").innerHTML=d.results.map(c=>`
+        <div class="ch" onclick="location='07-rickmorty-detalle.html?id=${c.id}'">
+          <img src="${c.image}"/>
+          <div class="info">
+            <div class="name">${c.name}</div>
+            <div class="status">${c.status} · ${c.species}</div>
+          </div>
+        </div>`).join("");
+      const pag=document.getElementById("pag"); pag.innerHTML="";
+      if(d.info.prev){const b=document.createElement("button");b.textContent="← Ant";b.onclick=()=>run(page-1);pag.appendChild(b);}
+      if(d.info.next){const b=document.createElement("button");b.textContent="Sig →";b.onclick=()=>run(page+1);pag.appendChild(b);}
+    } catch(e){ document.getElementById("out").innerHTML=`<span class="err">Error: ${e.message}</span>`; }
+  }
+  run(1);
+</script>
+</body></html>

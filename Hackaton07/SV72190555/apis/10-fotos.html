@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Fotos</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:monospace;background:#fff;color:#111;max-width:520px;margin:40px auto;padding:0 20px;}
+  a{color:#555;font-size:12px;text-decoration:none;}a:hover{color:#000;}
+  h1{font-size:15px;margin:16px 0 4px;} .sub{font-size:11px;color:#999;margin-bottom:6px;}
+  .note{font-size:11px;color:#e00;margin-bottom:16px;}
+  .row{display:flex;gap:8px;margin-bottom:16px;}
+  input{border:1px solid #ccc;padding:5px 8px;font-family:monospace;font-size:12px;outline:none;width:160px;}
+  input:focus{border-color:#000;}
+  button{border:1px solid #000;background:#fff;padding:5px 12px;font-family:monospace;font-size:12px;cursor:pointer;}
+  button:hover{background:#000;color:#fff;}
+  #out{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+  #out img{width:100%;aspect-ratio:1;object-fit:cover;display:block;border-radius:3px;}
+  .err{color:red;}
+</style>
+</head><body>
+  <a href="../index.html">← volver</a>
+  <h1>Fotografías · Unsplash</h1>
+  <p class="sub">api.unsplash.com/search/photos</p>
+    <div class="row">
+    <input id="q" value="nature" placeholder="tema de búsqueda"/>
+    <button onclick="run()">Buscar</button>
+  </div>
+  <div id="out"></div>
+<script>
+
+  const KEY = "A4HtPEIHgkFnWh6mrDcbbEXgjNjpn4sBfsle1WPj4vs";
+
+  document.getElementById("q").onkeydown = e => e.key==="Enter" && run();
+  async function run(){
+    const q=document.getElementById("q").value.trim();
+    if(!q) return;
+    document.getElementById("out").innerHTML="cargando...";
+    try{
+      const d=await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=9`,{headers:{Authorization:`Client-ID ${KEY}`}}).then(r=>r.json());
+      if(d.errors) throw new Error(d.errors[0]);
+      document.getElementById("out").innerHTML=d.results.map(p=>`
+        <a href="${p.links.html}" target="_blank"><img src="${p.urls.small}" title="${p.user.name}"/></a>`).join("");
+    } catch(e){ document.getElementById("out").innerHTML=`<span class="err">Error: ${e.message}</span>`; }
+  }
+</script>
+</body></html>

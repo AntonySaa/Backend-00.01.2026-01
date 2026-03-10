@@ -1,0 +1,84 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Tipo de Cambio</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:monospace;background:#fff;color:#111;max-width:500px;margin:40px auto;padding:0 20px;}
+  a{color:#555;font-size:12px;text-decoration:none;}a:hover{color:#000;}
+  h1{font-size:15px;margin:16px 0 4px;} .sub{font-size:11px;color:#999;margin-bottom:20px;}
+  button{border:1px solid #000;background:#fff;padding:5px 12px;font-family:monospace;font-size:12px;cursor:pointer;margin-bottom:16px;}
+  button:hover{background:#000;color:#fff;}
+  #out{margin-top:20px;font-size:12px;line-height:2;}
+  .err{color:red;}
+  .field{display:flex;gap:8px;border-bottom:1px solid #f0f0f0;padding:5px 0;}
+  .field span:first-child{color:#999;width:100px;flex-shrink:0;}
+  .big{font-size:28px;font-weight:bold;margin:10px 0;}
+  input.conv{border:1px solid #ccc;padding:4px 6px;font-family:monospace;font-size:13px;width:80px;outline:none;text-align:center;}
+</style>
+</head><body>
+  <a href="../index.html">← volver</a>
+  <h1>Tipo de Cambio · USD → PEN</h1>
+  <p class="sub">open.er-api.com/v6/latest/USD</p>
+  <p class="sub">nunca me corrió el https://www.frankfurter.app y cambié de api</p>
+  <button onclick="run()">Consultar</button>
+  <div id="out"></div>
+<script>
+
+async function run() {
+
+    const out = document.getElementById("out")
+    out.innerHTML = "cargando..."
+
+    try {
+
+        const response = await fetch("https://open.er-api.com/v6/latest/USD")
+        const data = await response.json()
+
+        const pen = data.rates.PEN
+
+        // convertir fecha a hora de Lima
+        const fechaLima = new Date(data.time_last_update_utc).toLocaleString("es-PE", {
+            timeZone: "America/Lima",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        })
+
+        out.innerHTML = `
+            <div class="big">S/ ${pen}</div>
+            ${row("Fecha Lima", fechaLima)}
+            ${row("Base", "1 USD")}
+
+            <br>
+
+            <div style="font-size:12px;color:#999;margin-bottom:6px;">Convertidor:</div>
+
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+                USD 
+                <input class="conv" id="usd" type="number" value="1" min="0" oninput="calc(${pen})">
+                =
+                <span id="res" style="font-weight:bold;">S/ ${pen}</span>
+            </div>
+        `
+
+    }
+
+    catch(e){
+        out.innerHTML = `<span class="err">Error: ${e.message}</span>`
+    }
+}
+
+function row(k,v){
+    return `<div class="field"><span>${k}</span><span>${v}</span></div>`
+}
+
+function calc(pen){
+    const usd = document.getElementById("usd").value || 0
+    document.getElementById("res").textContent = "S/ " + (usd * pen).toFixed(2)
+}
+
+run()
+
+</script>
+</body></html>

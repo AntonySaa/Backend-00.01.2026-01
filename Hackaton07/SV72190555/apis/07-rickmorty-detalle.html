@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Rick & Morty Detalle</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:monospace;background:#fff;color:#111;max-width:500px;margin:40px auto;padding:0 20px;}
+  a{color:#555;font-size:12px;text-decoration:none;}a:hover{color:#000;}
+  h1{font-size:15px;margin:16px 0 4px;} .sub{font-size:11px;color:#999;margin-bottom:20px;}
+  .row{display:flex;gap:8px;align-items:center;margin-bottom:16px;}
+  input{border:1px solid #ccc;padding:5px 8px;font-family:monospace;font-size:12px;outline:none;width:70px;text-align:center;}
+  button{border:1px solid #000;background:#fff;padding:5px 12px;font-family:monospace;font-size:12px;cursor:pointer;}
+  button:hover{background:#000;color:#fff;}
+  #out{margin-top:20px;font-size:12px;line-height:2;}
+  .err{color:red;}
+  .field{display:flex;gap:8px;border-bottom:1px solid #f0f0f0;padding:5px 0;}
+  .field span:first-child{color:#999;width:100px;flex-shrink:0;}
+  img.avatar{width:80px;height:80px;border-radius:4px;display:block;margin-bottom:12px;}
+</style>
+</head><body>
+  <a href="06-rickmorty-lista.html">← lista</a> &nbsp;
+  <a href="../index.html">inicio</a>
+  <h1>Rick & Morty · Detalle</h1>
+  <p class="sub">rickandmortyapi.com</p>
+  <div class="row">
+    <span style="font-size:12px;color:#999;">ID:</span>
+    <input id="q" type="number" value="1" min="1"/>
+    <button onclick="run()">Consultar</button>
+  </div>
+  <div id="out"></div>
+<script>
+  const urlId=new URLSearchParams(location.search).get("id");
+  if(urlId) document.getElementById("q").value=urlId;
+  async function run(){
+    const id=document.getElementById("q").value||1;
+    document.getElementById("out").innerHTML="cargando...";
+    try{
+      const c=await fetch(`https://rickandmortyapi.com/api/character/${id}`).then(r=>r.json());
+      if(c.error) throw new Error(c.error);
+      document.getElementById("out").innerHTML=`
+        <img class="avatar" src="${c.image}"/>
+        ${row("Nombre",c.name)}
+        ${row("Estado",c.status)}
+        ${row("Especie",c.species)}
+        ${row("Género",c.gender)}
+        ${row("Origen",c.origin?.name)}
+        ${row("Ubicación",c.location?.name)}
+        ${row("Episodios",c.episode?.length+" apariciones")}`;
+    } catch(e){ document.getElementById("out").innerHTML=`<span class="err">Error: ${e.message}</span>`; }
+  }
+  function row(k,v){ return `<div class="field"><span>${k}</span><span>${v}</span></div>`; }
+  run();
+</script>
+</body></html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>GitHub</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:monospace;background:#fff;color:#111;max-width:500px;margin:40px auto;padding:0 20px;}
+  a{color:#555;font-size:12px;text-decoration:none;}a:hover{color:#000;}
+  h1{font-size:15px;margin:16px 0 4px;} .sub{font-size:11px;color:#999;margin-bottom:20px;}
+  .row{display:flex;gap:8px;margin-bottom:16px;}
+  input{border:1px solid #ccc;padding:5px 8px;font-family:monospace;font-size:12px;outline:none;width:200px;}
+  input:focus{border-color:#000;}
+  button{border:1px solid #000;background:#fff;padding:5px 12px;font-family:monospace;font-size:12px;cursor:pointer;}
+  button:hover{background:#000;color:#fff;}
+  #out{margin-top:20px;font-size:12px;line-height:2;}
+  .err{color:red;}
+  .field{display:flex;gap:8px;border-bottom:1px solid #f0f0f0;padding:5px 0;}
+  .field span:first-child{color:#999;width:90px;flex-shrink:0;}
+  img.avatar{width:48px;height:48px;border-radius:50%;display:block;margin-bottom:12px;}
+</style>
+</head><body>
+  <a href="../index.html">← volver</a>
+  <h1>GitHub · Perfil</h1>
+  <p class="sub">api.github.com/users/:username</p>
+  <div class="row">
+    <input id="q" value="rpinedaec83" placeholder="usuario"/>
+    <button onclick="run()">Consultar</button>
+  </div>
+  <div id="out"></div>
+<script>
+  document.getElementById("q").onkeydown = e => e.key==="Enter" && run();
+  async function run() {
+    const u = document.getElementById("q").value.trim();
+    if (!u) return;
+    document.getElementById("out").innerHTML = "cargando...";
+    try {
+      const d = await fetch(`https://api.github.com/users/${u}`).then(r=>r.json());
+      if (d.message) throw new Error(d.message);
+      document.getElementById("out").innerHTML = `
+        <img class="avatar" src="${d.avatar_url}"/>
+        ${row("Nombre", d.name||"—")}
+        ${row("Usuario", "@"+d.login)}
+        ${row("Bio", d.bio||"—")}
+        ${row("Ubicación", d.location||"—")}
+        ${row("Repos", d.public_repos)}
+        ${row("Seguidores", d.followers)}
+        ${row("Siguiendo", d.following)}
+        ${row("Perfil", `<a href="${d.html_url}" target="_blank">${d.html_url}</a>`)}`;
+    } catch(e) { document.getElementById("out").innerHTML = `<span class="err">Error: ${e.message}</span>`; }
+  }
+  function row(k,v){ return `<div class="field"><span>${k}</span><span>${v}</span></div>`; }
+  run();
+</script>
+</body></html>

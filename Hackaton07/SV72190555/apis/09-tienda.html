@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Tienda</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:monospace;background:#fff;color:#111;max-width:560px;margin:40px auto;padding:0 20px;}
+  a{color:#555;font-size:12px;text-decoration:none;}a:hover{color:#000;}
+  h1{font-size:15px;margin:16px 0 4px;} .sub{font-size:11px;color:#999;margin-bottom:12px;}
+  .cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+  .cats button{border:1px solid #ccc;background:#fff;padding:3px 10px;font-family:monospace;font-size:11px;cursor:pointer;}
+  .cats button.active,.cats button:hover{border-color:#000;background:#000;color:#fff;}
+  #out{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;font-size:11px;}
+  .card{border:1px solid #f0f0f0;border-radius:4px;padding:8px;display:flex;flex-direction:column;}
+  .card img{width:60px;height:60px;object-fit:contain;margin:0 auto 6px;}
+  .card .cat{color:#999;font-size:9px;text-transform:capitalize;}
+  .card .title{font-size:10px;font-weight:bold;line-height:1.3;margin:2px 0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .card .price{font-size:11px;font-weight:bold;margin-top:auto;padding-top:4px;}
+  .card .rating{font-size:9px;color:#999;}
+  .err{color:red;}
+</style>
+</head><body>
+  <a href="../index.html">← volver</a>
+  <h1>Tienda · Productos</h1>
+  <p class="sub">fakestoreapi.com</p>
+  <div class="cats">
+    <button class="active" onclick="load('all',this)">Todos</button>
+    <button onclick="load('electronics',this)">Electrónica</button>
+    <button onclick="load('jewelery',this)">Joyería</button>
+    <button onclick="load(\"men's clothing\",this)">Hombre</button>
+    <button onclick="load(\"women's clothing\",this)">Mujer</button>
+  </div>
+  <div id="out">cargando...</div>
+<script>
+  async function load(cat,btn){
+    document.querySelectorAll(".cats button").forEach(b=>b.classList.remove("active"));
+    if(btn) btn.classList.add("active");
+    document.getElementById("out").innerHTML="cargando...";
+    try{
+      const url=cat==="all"?"https://fakestoreapi.com/products":`https://fakestoreapi.com/products/category/${encodeURIComponent(cat)}`;
+      const data=await fetch(url).then(r=>r.json());
+      document.getElementById("out").innerHTML=data.map(p=>`
+        <div class="card">
+          <img src="${p.image}"/>
+          <div class="cat">${p.category}</div>
+          <div class="title">${p.title}</div>
+          <div class="price">$${p.price}</div>
+          <div class="rating">★ ${p.rating?.rate} (${p.rating?.count})</div>
+        </div>`).join("");
+    } catch(e){ document.getElementById("out").innerHTML=`<span class="err">Error: ${e.message}</span>`; }
+  }
+  load("all");
+</script>
+</body></html>

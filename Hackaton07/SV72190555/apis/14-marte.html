@@ -1,0 +1,45 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>NASA APOD</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:monospace;background:#fff;color:#111;max-width:560px;margin:40px auto;padding:0 20px;}
+  a{color:#555;font-size:12px;text-decoration:none;}a:hover{color:#000;}
+  h1{font-size:15px;margin:16px 0 4px;} .sub{font-size:11px;color:#999;margin-bottom:6px;}
+  .note{font-size:11px;color:#888;margin-bottom:16px;}
+  #out{margin-top:8px;font-size:12px;}
+  .field{display:flex;gap:8px;border-bottom:1px solid #f0f0f0;padding:5px 0;line-height:1.5;}
+  .field span:first-child{color:#999;width:80px;flex-shrink:0;}
+  img.apod{width:100%;border-radius:3px;display:block;margin-bottom:12px;cursor:pointer;}
+  iframe.apod{width:100%;aspect-ratio:16/9;border:none;display:block;margin-bottom:12px;}
+  .desc{font-size:11px;color:#555;line-height:1.7;margin-top:8px;border-left:2px solid #eee;padding-left:10px;}
+  .err{color:red;}
+</style>
+</head><body>
+  <a href="../index.html">← volver</a>
+  <h1>Marte · NASA APOD</h1>
+  <p class="sub">api.nasa.gov/planetary/apod</p>
+  <div id="out">cargando...</div>
+<script>
+  
+  const NASA_KEY = "5ZKvQ98Xy0fUOkWcPKrKDiFwmLAGdF3BKTJeL7Xt";
+
+  async function run(){
+    document.getElementById("out").innerHTML="cargando...";
+    try{
+      const d=await fetch(`https://api.nasa.gov/planetary/apod?api_key=${NASA_KEY}`).then(r=>r.json());
+      if(d.error) throw new Error(d.error.message||"Error");
+      const media = d.media_type==="video"
+        ? `<iframe class="apod" src="${d.url}" allowfullscreen></iframe>`
+        : `<img class="apod" src="${d.hdurl||d.url}" title="Click para HD" onclick="window.open('${d.hdurl||d.url}','_blank')"/>`;
+      document.getElementById("out").innerHTML=`
+        ${media}
+        ${row("Título",d.title)}
+        ${row("Fecha",d.date)}
+        ${row("Tipo",d.media_type==="video"?"Video":"Imagen")}
+        ${d.copyright?row("Copyright","© "+d.copyright.trim()):""}
+        <div class="desc">${d.explanation}</div>`;
+    } catch(e){ document.getElementById("out").innerHTML=`<span class="err">Error: ${e.message}</span>`; }
+  }
+  function row(k,v){ return `<div class="field"><span>${k}</span><span>${v}</span></div>`; }
+  run();
+</script>
+</body></html>

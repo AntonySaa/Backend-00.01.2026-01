@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Clima</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:monospace;background:#fff;color:#111;max-width:500px;margin:40px auto;padding:0 20px;}
+  a{color:#555;font-size:12px;text-decoration:none;}a:hover{color:#000;}
+  h1{font-size:15px;margin:16px 0 4px;} .sub{font-size:11px;color:#999;margin-bottom:20px;}
+  .row{display:flex;gap:8px;margin-bottom:16px;}
+  input{border:1px solid #ccc;padding:5px 8px;font-family:monospace;font-size:12px;outline:none;width:200px;}
+  input:focus{border-color:#000;}
+  button{border:1px solid #000;background:#fff;padding:5px 12px;font-family:monospace;font-size:12px;cursor:pointer;}
+  button:hover{background:#000;color:#fff;}
+  #out{margin-top:20px;font-size:12px;line-height:2;}
+  .err{color:red;}
+  .field{display:flex;gap:8px;border-bottom:1px solid #f0f0f0;padding:5px 0;}
+  .field span:first-child{color:#999;width:100px;flex-shrink:0;}
+  .big{font-size:28px;font-weight:bold;margin:10px 0;}
+</style>
+</head><body>
+  <a href="../index.html">← volver</a>
+  <h1>Clima · Tiempo real</h1>
+  <p class="sub">open-meteo.com</p>
+  <div class="row">
+    <input id="q" value="Lima" placeholder="ciudad"/>
+    <button onclick="run()">Consultar</button>
+  </div>
+  <div id="out"></div>
+<script>
+  const WMO={0:"☀️ Despejado",1:"🌤️ Mayorm. despejado",2:"⛅ Parcial. nublado",3:"☁️ Nublado",45:"🌫️ Niebla",51:"🌦️ Llovizna",61:"🌧️ Lluvia leve",63:"🌧️ Lluvia moderada",65:"⛈️ Lluvia fuerte",80:"🌦️ Chubascos",95:"⛈️ Tormenta"};
+  document.getElementById("q").onkeydown = e => e.key==="Enter" && run();
+  async function run() {
+    const ciudad = document.getElementById("q").value.trim();
+    if (!ciudad) return;
+    document.getElementById("out").innerHTML = "buscando...";
+    try {
+      const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(ciudad)}&count=1&language=es`).then(r=>r.json());
+      if (!geo.results?.length) throw new Error("Ciudad no encontrada");
+      const {latitude,longitude,name,country} = geo.results[0];
+      const w = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`).then(r=>r.json());
+      const c = w.current;
+      document.getElementById("out").innerHTML = `
+        <div class="big">${Math.round(c.temperature_2m)}°C</div>
+        ${row("Ciudad", `${name}, ${country}`)}
+        ${row("Condición", WMO[c.weather_code]||"—")}
+        ${row("Humedad", c.relative_humidity_2m+"%")}
+        ${row("Viento", Math.round(c.wind_speed_10m)+" km/h")}`;
+    } catch(e) { document.getElementById("out").innerHTML = `<span class="err">Error: ${e.message}</span>`; }
+  }
+  function row(k,v){ return `<div class="field"><span>${k}</span><span>${v}</span></div>`; }
+  run();
+</script>
+</body></html>
