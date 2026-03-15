@@ -1,0 +1,3 @@
+"product_id","product_name","supplier_id","category_id","quantity_per_unit","unit_price","units_in_stock","units_on_order","reorder_level","discontinued"
+29,"Thüringer Rostbratwurst",12,6,"50 bags x 30 sausgs.","123.79",0,0,0,1
+38,"Côte de Blaye",18,1,"12 - 75 cl bottles","263.5",17,0,15,0
