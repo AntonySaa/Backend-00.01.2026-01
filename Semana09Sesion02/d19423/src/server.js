@@ -6,6 +6,8 @@ require("dotenv").config();
 const syncDB = require('./sync-db');
 const {sequelize} = require('./models');
 const {userRouter} = require('./routes/user.route');
+const {postRouter} = require('./routes/post.route');
+const {commentRouter} = require('./routes/comment.route')
 
 
 const app = express();
@@ -21,6 +23,8 @@ app.use((req,res,next)=>{
 })
 
 app.use('/user',userRouter);
+app.use('/post',postRouter);
+app.use('/comment',commentRouter);
 
 app.get('/health',(req,res)=>{
     res.json({status:true})

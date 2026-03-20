@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, DATEONLY } = require('sequelize');
 const sequelize = require('./db');
 
 const User = sequelize.define("User",{
@@ -10,4 +10,25 @@ const User = sequelize.define("User",{
     role: { type: DataTypes.ENUM('admin', 'author', 'reader')}
 }, {tableName: 'users'});
 
-module.exports = { sequelize, User};
+const Post = sequelize.define("Post",{
+    title: { type: DataTypes.STRING, allowNull:false},
+    slug: {type : DataTypes.STRING, allowNull:false , unique:true},
+    body: {type:DataTypes.TEXT, allowNull:false},
+    published:{type:DataTypes.BOOLEAN, defaultValue:false}
+}, {tableName: "post", paranoid:true});
+
+const Comment = sequelize.define('Comment',{
+    body: {type:DataTypes.TEXT, allowNull:false}
+},{tableName:'comments'})
+
+
+User.hasMany(Post);
+Post.belongsTo(User);
+
+Post.hasMany(Comment);
+Comment.belongsTo(Post);
+
+User.hasMany(Comment);
+Comment.belongsTo(User)
+
+module.exports = {sequelize, User, Post, Comment}
