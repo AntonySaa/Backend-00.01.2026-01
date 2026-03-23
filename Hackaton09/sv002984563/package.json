@@ -1,0 +1,33 @@
+{
+  "name": "backend-00.01.2026-01",
+  "version": "1.0.0",
+  "description": "Repo del Curso de Backend",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keterlynamh/Backend-00.01.2026-01.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/keterlynamh/Backend-00.01.2026-01/issues"
+  },
+  "homepage": "https://github.com/keterlynamh/Backend-00.01.2026-01#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.3.1",
+    "expres": "^0.0.5",
+    "express": "^5.2.1",
+    "pg": "^8.20.0",
+    "sequelize": "^6.37.8"
+  }
+}
