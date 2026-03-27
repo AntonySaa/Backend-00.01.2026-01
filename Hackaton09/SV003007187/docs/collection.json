@@ -1,0 +1,159 @@
+{
+  "info": {
+    "name": "Mini-Learning Platform API",
+    "description": "API para hackaton - Cursos y lecciones",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:3000/"
+      }
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/users"
+          }
+        },
+        {
+          "name": "Listar estudiantes",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/users?role=student"
+          }
+        },
+        {
+          "name": "Buscar usuario",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/users?q=ada"
+          }
+        },
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Nuevo\",\n  \"lastName\": \"Usuario\",\n  \"email\": \"nuevo@test.com\",\n  \"passwordHash\": \"123456\",\n  \"role\": \"student\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "Listar cursos",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/courses"
+          }
+        },
+        {
+          "name": "Listar cursos publicados",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/courses?published=true"
+          }
+        },
+        {
+          "name": "Detalle de curso",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/courses/introduccion-a-node-js"
+          }
+        },
+        {
+          "name": "Crear curso",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Curso de Prueba\",\n  \"description\": \"Este es un curso de prueba\",\n  \"published\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lessons",
+      "item": [
+        {
+          "name": "Listar lecciones",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/lessons/courses/1/lessons"
+          }
+        },
+        {
+          "name": "Crear leccion",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/lessons/courses/1/lessons",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nueva Leccion\",\n  \"body\": \"Contenido de la nueva leccion con al menos 20 caracteres\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enrollments",
+      "item": [
+        {
+          "name": "Inscribir usuario",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/courses/1/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar inscripciones",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/courses/1/enrollments"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Listar comentarios",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/lessons/1/comments"
+          }
+        },
+        {
+          "name": "Crear comentario",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/lessons/1/comments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Mi comentario sobre esta leccion\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
