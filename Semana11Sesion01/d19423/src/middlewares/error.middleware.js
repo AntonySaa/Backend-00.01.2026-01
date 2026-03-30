@@ -1,0 +1,10 @@
+module.exports = (err,req,res,next)=>{
+    console.err(err);
+    const status = err.status || 500;
+    res.status(status).json({
+        error: err,
+        message: err.message || "Error Interno",
+        details: err.errors || undefined
+    });
+    next();
+}
