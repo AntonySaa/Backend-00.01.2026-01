@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lista de Compras</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      background: #4f46e5;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav h1 { font-size: 1.3rem; }
+    nav span { font-size: 0.9rem; opacity: 0.85; }
+    #btn-logout {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    #btn-logout:hover { background: rgba(255,255,255,0.35); }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1.5rem 2rem 0;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .tab {
+      padding: 0.6rem 1.4rem;
+      border-radius: 8px 8px 0 0;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      background: #ddd;
+      color: #555;
+      font-weight: 500;
+    }
+    .tab.active { background: white; color: #4f46e5; font-weight: 700; }
+
+    /* ── CONTENIDO ── */
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 0 8px 8px 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    /* ── LOGIN / REGISTER ── */
+    .form-box h2 { margin-bottom: 1.2rem; color: #4f46e5; }
+    .form-box input {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+    .form-box input:focus { outline: none; border-color: #4f46e5; }
+    .btn-primary {
+      width: 100%;
+      padding: 0.8rem;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-primary:hover { background: #4338ca; }
+    .toggle-link {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .toggle-link a { color: #4f46e5; cursor: pointer; text-decoration: underline; }
+
+    /* ── CREAR TAREA ── */
+    .create-box {
+      background: #f8f7ff;
+      border: 1px solid #e0dff8;
+      border-radius: 10px;
+      padding: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+    .create-box h3 { margin-bottom: 1rem; color: #4f46e5; font-size: 1rem; }
+    .create-box input, .create-box textarea {
+      width: 100%;
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 0.7rem;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+    .create-box input:focus, .create-box textarea:focus { outline: none; border-color: #4f46e5; }
+    .btn-add {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .btn-add:hover { background: #4338ca; }
+
+    /* ── TAREAS ── */
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      margin-bottom: 0.8rem;
+      background: #fafafa;
+      transition: box-shadow 0.2s;
+    }
+    .task-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .task-item.completed { opacity: 0.6; }
+    .task-item.completed .task-title { text-decoration: line-through; color: #999; }
+    .task-info { flex: 1; }
+    .task-title { font-weight: 600; margin-bottom: 0.2rem; }
+    .task-desc { font-size: 0.85rem; color: #777; margin-bottom: 0.3rem; }
+    .task-date { font-size: 0.8rem; color: #aaa; }
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .badge-pending { background: #fef3c7; color: #d97706; }
+    .badge-done { background: #d1fae5; color: #059669; }
+    .btn-complete {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      align-self: center;
+    }
+    .btn-complete:hover { background: #059669; }
+
+    .empty { text-align: center; color: #aaa; padding: 2rem; font-size: 0.95rem; }
+    .msg-error { color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; }
+    .msg-success { color: #10b981; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; }
+
+    /* ── ESTADÍSTICAS ── */
+    .stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      flex: 1;
+      text-align: center;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .stat-card span { display: block; font-size: 1.6rem; font-weight: 700; }
+    .stat-all   { background: #ede9fe; color: #4f46e5; }
+    .stat-pend  { background: #fef3c7; color: #d97706; }
+    .stat-done  { background: #d1fae5; color: #059669; }
+
+    #app { display: none; }
+    #auth { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ── AUTENTICACIÓN ── -->
+<div id="auth">
+  <nav><h1>🛒 Lista de Compras</h1></nav>
+  <div style="max-width:420px; margin:3rem auto; padding:0 1rem;">
+
+    <!-- LOGIN -->
+    <div id="view-login" class="container">
+      <div class="form-box">
+        <h2>Iniciar sesión</h2>
+        <input type="email" id="login-email" placeholder="Email" />
+        <input type="password" id="login-pass" placeholder="Contraseña" />
+        <button class="btn-primary" onclick="login()">Entrar</button>
+        <p id="login-msg" class="msg-error"></p>
+        <div class="toggle-link">¿No tienes cuenta? <a onclick="toggleAuth()">Regístrate</a></div>
+      </div>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="view-register" class="container" style="display:none;">
+      <div class="form-box">
+        <h2>Crear cuenta</h2>
+        <input type="text"  id="reg-first"  placeholder="Nombre" />
+        <input type="text"  id="reg-last"   placeholder="Apellido" />
+        <input type="email" id="reg-email"  placeholder="Email" />
+        <input type="password" id="reg-pass" placeholder="Contraseña" />
+        <button class="btn-primary" onclick="register()">Registrarse</button>
+        <p id="reg-msg" class="msg-error"></p>
+        <div class="toggle-link">¿Ya tienes cuenta? <a onclick="toggleAuth()">Inicia sesión</a></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── APP PRINCIPAL ── -->
+<div id="app">
+  <nav>
+    <h1>🛒 Lista de Compras</h1>
+    <span id="nav-user"></span>
+    <button id="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </nav>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('lista')">📋 Lista</button>
+    <button class="tab" onclick="switchTab('pendientes')">⏳ Pendientes</button>
+    <button class="tab" onclick="switchTab('completados')">✅ Completados</button>
+  </div>
+
+  <div class="container">
+
+    <!-- ESTADÍSTICAS -->
+    <div class="stats">
+      <div class="stat-card stat-all">Total<span id="stat-total">0</span></div>
+      <div class="stat-card stat-pend">Pendientes<span id="stat-pending">0</span></div>
+      <div class="stat-card stat-done">Completados<span id="stat-done">0</span></div>
+    </div>
+
+    <!-- CREAR TAREA (solo en pestaña Lista) -->
+    <div class="create-box" id="create-box">
+      <h3>➕ Agregar a la lista</h3>
+      <input type="text" id="task-title" placeholder="Nombre del producto *" />
+      <input type="text" id="task-desc"  placeholder="Descripción (opcional)" />
+      <input type="date" id="task-date" />
+      <button class="btn-add" onclick="createTask()">Agregar</button>
+      <p id="task-msg" class="msg-error"></p>
+    </div>
+
+    <!-- LISTA DE TAREAS -->
+    <div id="task-list"></div>
+
+  </div>
+</div>
+
+<script>
+  const API = "http://localhost:3000/api";
+  let token = localStorage.getItem("token") || null;
+  let currentTab = "lista";
+
+  // ── INICIALIZACIÓN ────────────────────────────────────
+  window.onload = () => {
+    if (token) showApp();
+    // Fecha de hoy por defecto
+    document.getElementById("task-date").value = new Date().toISOString().split("T")[0];
+  };
+
+  // ── AUTH ──────────────────────────────────────────────
+  function toggleAuth() {
+    const login = document.getElementById("view-login");
+    const reg   = document.getElementById("view-register");
+    login.style.display = login.style.display === "none" ? "block" : "none";
+    reg.style.display   = reg.style.display   === "none" ? "block" : "none";
+  }
+
+  async function login() {
+    const email    = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-pass").value;
+    const msg      = document.getElementById("login-msg");
+    msg.textContent = "";
+
+    if (!email || !password) { msg.textContent = "Completa todos los campos."; return; }
+
+    try {
+      const res  = await fetch(`${API}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) { msg.textContent = data.message || "Error al iniciar sesión."; return; }
+
+      token = data.data.token;
+      localStorage.setItem("token", token);
+      showApp();
+    } catch (e) {
+      msg.textContent = "No se pudo conectar al servidor.";
+    }
+  }
+
+  async function register() {
+    const firstName = document.getElementById("reg-first").value.trim();
+    const lastName  = document.getElementById("reg-last").value.trim();
+    const email     = document.getElementById("reg-email").value.trim();
+    const password  = document.getElementById("reg-pass").value;
+    const msg       = document.getElementById("reg-msg");
+    msg.textContent = "";
+
+    if (!firstName || !lastName || !email || !password) {
+      msg.textContent = "Completa todos los campos."; return;
+    }
+
+    try {
+      const res  = await fetch(`${API}/user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName, lastName, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) { msg.textContent = data.message || "Error al registrarse."; return; }
+
+      msg.style.color = "#10b981";
+      msg.textContent = "¡Cuenta creada! Ahora inicia sesión.";
+      setTimeout(toggleAuth, 1500);
+    } catch (e) {
+      msg.textContent = "No se pudo conectar al servidor.";
+    }
+  }
+
+  async function logout() {
+    try {
+      await fetch(`${API}/auth/logout`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (_) {}
+    token = null;
+    localStorage.removeItem("token");
+    location.reload();
+  }
+
+  // ── APP ───────────────────────────────────────────────
+  function showApp() {
+    document.getElementById("auth").style.display = "none";
+    document.getElementById("app").style.display  = "block";
+    loadStats();
+    loadTasks();
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll(".tab").forEach((t, i) => {
+      t.classList.toggle("active", ["lista","pendientes","completados"][i] === tab);
+    });
+    document.getElementById("create-box").style.display = tab === "lista" ? "block" : "none";
+    loadTasks();
+  }
+
+  // ── STATS ─────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const [all, pend, done] = await Promise.all([
+        fetch(`${API}/task`,           { headers: authHeader() }).then(r => r.json()),
+        fetch(`${API}/task/pending`,   { headers: authHeader() }).then(r => r.json()),
+        fetch(`${API}/task/completed`, { headers: authHeader() }).then(r => r.json()),
+      ]);
+      document.getElementById("stat-total").textContent   = all.total  || 0;
+      document.getElementById("stat-pending").textContent = pend.total || 0;
+      document.getElementById("stat-done").textContent    = done.total || 0;
+    } catch (_) {}
+  }
+
+  // ── CARGAR TAREAS ─────────────────────────────────────
+  async function loadTasks() {
+    const urls = { lista: "/task", pendientes: "/task/pending", completados: "/task/completed" };
+    const url  = `${API}${urls[currentTab]}`;
+    const list = document.getElementById("task-list");
+    list.innerHTML = "<p class='empty'>Cargando...</p>";
+
+    try {
+      const res  = await fetch(url, { headers: authHeader() });
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 401) { logout(); return; }
+        list.innerHTML = `<p class='empty'>Error al cargar.</p>`;
+        return;
+      }
+
+      const tasks = data.data || [];
+      if (tasks.length === 0) {
+        list.innerHTML = `<p class='empty'>No hay tareas aquí.</p>`;
+        return;
+      }
+
+      list.innerHTML = tasks.map(t => `
+        <div class="task-item ${t.isCompleted ? 'completed' : ''}">
+          <div class="task-info">
+            <div class="task-title">${escHtml(t.title)}</div>
+            ${t.description ? `<div class="task-desc">${escHtml(t.description)}</div>` : ""}
+            <div class="task-date">📅 ${formatDate(t.deadline)}</div>
+          </div>
+          <span class="badge ${t.isCompleted ? 'badge-done' : 'badge-pending'}">
+            ${t.isCompleted ? "✅ Hecho" : "⏳ Pendiente"}
+          </span>
+          ${!t.isCompleted
+            ? `<button class="btn-complete" onclick="completeTask(${t.id})">Completar</button>`
+            : ""}
+        </div>
+      `).join("");
+    } catch (e) {
+      list.innerHTML = `<p class='empty'>No se pudo conectar al servidor.</p>`;
+    }
+  }
+
+  // ── CREAR TAREA ───────────────────────────────────────
+  async function createTask() {
+    const title       = document.getElementById("task-title").value.trim();
+    const description = document.getElementById("task-desc").value.trim();
+    const deadline    = document.getElementById("task-date").value;
+    const msg         = document.getElementById("task-msg");
+    msg.textContent   = "";
+    msg.style.color   = "#ef4444";
+
+    if (!title)    { msg.textContent = "El nombre es obligatorio."; return; }
+    if (!deadline) { msg.textContent = "La fecha es obligatoria."; return; }
+
+    try {
+      const res  = await fetch(`${API}/task`, {
+        method: "POST",
+        headers: { ...authHeader(), "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description, deadline: new Date(deadline).toISOString() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { msg.textContent = data.message || "Error al crear."; return; }
+
+      // Limpiar formulario
+      document.getElementById("task-title").value = "";
+      document.getElementById("task-desc").value  = "";
+      document.getElementById("task-date").value  = new Date().toISOString().split("T")[0];
+      msg.style.color   = "#10b981";
+      msg.textContent   = "¡Agregado a la lista!";
+      setTimeout(() => { msg.textContent = ""; }, 2000);
+
+      loadStats();
+      loadTasks();
+    } catch (e) {
+      msg.textContent = "No se pudo conectar al servidor.";
+    }
+  }
+
+  // ── COMPLETAR TAREA ───────────────────────────────────
+  async function completeTask(id) {
+    try {
+      const res = await fetch(`${API}/task/${id}/complete`, {
+        method: "PATCH",
+        headers: authHeader(),
+      });
+      if (!res.ok) return;
+      loadStats();
+      loadTasks();
+    } catch (_) {}
+  }
+
+  // ── HELPERS ───────────────────────────────────────────
+  function authHeader() {
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return "Sin fecha";
+    return new Date(dateStr).toLocaleDateString("es-PE", {
+      day: "2-digit", month: "long", year: "numeric"
+    });
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+</script>
+</body>
+</html>
