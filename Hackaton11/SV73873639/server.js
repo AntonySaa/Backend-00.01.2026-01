@@ -2,8 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 
-const uri = 'mongodb://Tatsu:Alastor@ac-2ej4gxx-shard-00-00.trnzdzx.mongodb.net:27017,ac-2ej4gxx-shard-00-01.trnzdzx.mongodb.net:27017,ac-2ej4gxx-shard-00-02.trnzdzx.mongodb.net:27017/SV73873639?ssl=true&replicaSet=atlas-g1exzy-shard-0&authSource=admin&appName=prueba01';
+const uri = process.env.MONGODB_URI;
 
+if (!uri) {
+    throw new Error('La variable de entorno MONGODB_URI no está definida');
+}
 mongoose.connect(uri).then(() => console.log('¡Conexión a MongoDB (SV73873639) exitosa!'));
 
 const app = express();
