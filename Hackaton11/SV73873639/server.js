@@ -2,16 +2,20 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 
-// Conexión a MongoDB: Nombre de la BD es el código de alumno (SV73873639)
-const uri = 'mongodb://Tatsu:Alastor@ac-2ej4gxx-shard-00-00.trnzdzx.mongodb.net:27017,ac-2ej4gxx-shard-00-01.trnzdzx.mongodb.net:27017,ac-2ej4gxx-shard-00-02.trnzdzx.mongodb.net:27017/SV73873639?ssl=true&replicaSet=atlas-g1exzy-shard-0&authSource=admin&appName=prueba01';
+const uri = process.env.MONGODB_URI;
 
+if (!uri) {
+    throw new Error('La variable de entorno MONGODB_URI no está definida');
+}
 mongoose.connect(uri).then(() => console.log('¡Conexión a MongoDB (SV73873639) exitosa!'));
 
 const app = express();
 app.use(express.json());
 app.use('/Images', express.static(path.join(__dirname, 'Images')));
 
-// 1. ESQUEMA DE MONGOOSE
+// --- ESQUEMAS DE MONGOOSE ---
+
+// 1. Esquema del Inventario (El que ya teníamos)
 const inventarioSchema = new mongoose.Schema({
     tablones: { type: Number, default: 0 },
     goma_kg: { type: Number, default: 0 },
@@ -20,9 +24,16 @@ const inventarioSchema = new mongoose.Schema({
 });
 const Inventario = mongoose.model('Inventario', inventarioSchema);
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+// 2. NUEVO: Esquema del Historial de Operaciones
+const registroSchema = new mongoose.Schema({
+    accion: { type: String, required: true },
+    fecha: { type: Date, default: Date.now }
+});
+const Registro = mongoose.model('Registro', registroSchema);
 
-// 2. RUTAS DE LA API
+// --- RUTAS DE LA API ---
+
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 app.get('/api/inventario', async (req, res) => {
     let inv = await Inventario.findOne();
@@ -33,15 +44,34 @@ app.get('/api/inventario', async (req, res) => {
     res.json(inv);
 });
 
+// NUEVO: Ruta para leer los últimos 10 registros
+app.get('/api/registros', async (req, res) => {
+    try {
+        const registros = await Registro.find().sort({ fecha: -1 }).limit(10);
+        res.json(registros);
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
 app.post('/api/inventario/abastecer', async (req, res) => {
     const { tipo } = req.body;
     let inv = await Inventario.findOne();
+    let mensajeLog = "";
+
+    if (!inv) {
+        inv = new Inventario();
+        await inv.save();
+    }
     
-    if (tipo === 'materia_prima') inv.tablones += 3;
-    if (tipo === 'insumo') inv.goma_kg += 1;
-    if (tipo === 'personal') inv.horas_hombre += 40;
+    if (tipo === 'materia_prima') { inv.tablones += 3; mensajeLog = "Se compró un Lote de Tablones (+3)"; }
+    if (tipo === 'insumo') { inv.goma_kg += 1; mensajeLog = "Se compró un Lote de Goma (+1kg)"; }
+    if (tipo === 'personal') { inv.horas_hombre += 40; mensajeLog = "Se registró un Turno de Personal (+40 HH)"; }
 
     await inv.save();
+
+    // Guardar en el historial
+    const nuevoRegistro = new Registro({ accion: mensajeLog });
+    await nuevoRegistro.save();
+
     res.json({ mensaje: "Abastecimiento exitoso", inventario: inv });
 });
 
@@ -55,11 +85,18 @@ app.post('/api/inventario/producir', async (req, res) => {
         inv.armarios_producidos += 1;
         
         await inv.save();
+
+        // Guardar éxito en historial
+        await new Registro({ accion: "Producción Exitosa: +1 Armario fabricado" }).save();
+        
         res.json({ mensaje: "Armario fabricado con éxito", inventario: inv });
     } else {
+        // Guardar error en historial
+        await new Registro({ accion: "Error: Intento de producción fallido (Falta de recursos)" }).save();
         res.status(400).json({ error: "Recursos insuficientes para producir un armario" });
     }
 });
+
 
 const PUERTO = 3000;
 app.listen(PUERTO, () => console.log(`Fábrica operativa en puerto ${PUERTO}`));
