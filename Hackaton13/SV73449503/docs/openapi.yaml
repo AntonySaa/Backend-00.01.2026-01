@@ -1,0 +1,127 @@
+openapi: 3.0.3
+info:
+  title: Hackaton API Express
+  version: 1.0.0
+  description: API modular con middlewares, rutas versionadas, uploads, métricas e idempotencia.
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/health:
+    get:
+      summary: Estado de salud
+      responses:
+        '200':
+          description: OK
+  /api/data:
+    post:
+      summary: Recepción de data JSON
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Data recibida
+  /api/v1/users:
+    get:
+      summary: Lista usuarios
+      responses:
+        '200':
+          description: Usuarios listados
+    post:
+      summary: Crear usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '201':
+          description: Usuario creado
+  /api/v1/users/{id}:
+    get:
+      summary: Obtener usuario por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario encontrado
+        '404':
+          description: No encontrado
+  /api/v1/orders:
+    get:
+      summary: Listar órdenes (requiere x-token)
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: status
+          schema:
+            type: string
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+        - in: query
+          name: order
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista paginada
+        '401':
+          description: Token inválido
+    post:
+      summary: Crear orden
+      responses:
+        '201':
+          description: Orden creada
+  /api/v1/orders/export:
+    get:
+      summary: Exportar órdenes en CSV
+      responses:
+        '200':
+          description: Archivo CSV
+  /api/v1/uploads/avatar:
+    post:
+      summary: Subir avatar (image/*, max 2MB)
+      responses:
+        '201':
+          description: Archivo subido
+  /api/v1/payments:
+    post:
+      summary: Pago idempotente
+      responses:
+        '201':
+          description: Pago procesado
+  /api/metrics:
+    get:
+      summary: Métricas por ruta
+      responses:
+        '200':
+          description: Métricas disponibles
+  /api/stream:
+    get:
+      summary: Stream SSE con 5 ticks
+      responses:
+        '200':
+          description: Stream abierto
