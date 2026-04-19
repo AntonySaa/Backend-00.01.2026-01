@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Compras</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f2eb;
+      --card: #fffef9;
+      --border: #e2ddd4;
+      --border-dark: #c8c2b6;
+      --text: #1a1814;
+      --muted: #7a7568;
+      --accent: #2d5a3d;
+      --accent-light: #e8f2eb;
+      --accent-text: #1e3d29;
+      --danger: #8b2a2a;
+      --danger-light: #faeaea;
+      --amber: #7a5c1e;
+      --amber-light: #fdf4e0;
+      --tag-done: #1e3d29;
+      --tag-done-bg: #d4edda;
+      --tag-pending-bg: #fff3cd;
+      --tag-pending: #7a5c1e;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 680px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1.5px solid var(--border-dark);
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+
+    header span {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 1.5rem;
+      background: var(--border);
+      padding: 4px;
+      border-radius: 10px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      border-radius: 7px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab.active {
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Form ── */
+    .form-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-card h2 {
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label { font-size: 0.8rem; font-weight: 500; color: var(--muted); }
+
+    input, textarea {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+
+    input:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 72px; }
+
+    .btn-submit {
+      margin-top: 12px;
+      width: 100%;
+      padding: 10px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .btn-submit:hover { opacity: 0.88; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Items list ── */
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .list-header h2 {
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .count-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      background: var(--border);
+      padding: 2px 8px;
+      border-radius: 99px;
+      color: var(--muted);
+    }
+
+    .item-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: border-color 0.15s;
+    }
+
+    .item-card:hover { border-color: var(--border-dark); }
+
+    .item-card.done { opacity: 0.65; }
+
+    .item-info { flex: 1; min-width: 0; }
+
+    .item-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .item-meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+
+    .tag-date { background: var(--border); color: var(--muted); }
+    .tag-done { background: var(--tag-done-bg); color: var(--tag-done); }
+    .tag-pending { background: var(--tag-pending-bg); color: var(--tag-pending); }
+
+    .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    .btn-action {
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+
+    .btn-complete {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+
+    .btn-complete:hover { background: var(--accent); color: #fff; }
+
+    .btn-delete:hover {
+      background: var(--danger-light);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .empty span { display: block; font-size: 2rem; margin-bottom: 8px; }
+
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: var(--text);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.2s;
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: var(--danger); }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🛒 Lista de Compras</h1>
+    <span>localhost:3000</span>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('agregar')">Agregar</button>
+    <button class="tab" onclick="switchTab('pendientes')">Pendientes</button>
+    <button class="tab" onclick="switchTab('completados')">Completados</button>
+  </div>
+
+  <!-- Panel: Agregar -->
+  <div class="panel active" id="panel-agregar">
+    <div class="form-card">
+      <h2>Nuevo ítem</h2>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" type="text" placeholder="Ej: Comprar leche" />
+        </div>
+        <div class="form-group full">
+          <label for="descripcion">Descripción</label>
+          <textarea id="descripcion" placeholder="Ej: Leche deslactosada 1L"></textarea>
+        </div>
+        <div class="form-group full">
+          <label for="fecha">Fecha</label>
+          <input id="fecha" type="date" />
+        </div>
+      </div>
+      <button class="btn-submit" onclick="crearItem()">Agregar ítem</button>
+    </div>
+  </div>
+
+  <!-- Panel: Pendientes -->
+  <div class="panel" id="panel-pendientes">
+    <div class="list-header">
+      <h2>Pendientes</h2>
+      <span class="count-badge" id="count-pendientes">0</span>
+    </div>
+    <div id="list-pendientes"><div class="loading">Cargando...</div></div>
+  </div>
+
+  <!-- Panel: Completados -->
+  <div class="panel" id="panel-completados">
+    <div class="list-header">
+      <h2>Completados</h2>
+      <span class="count-badge" id="count-completados">0</span>
+    </div>
+    <div id="list-completados"><div class="loading">Cargando...</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'http://localhost:3000';
+
+  // Poner fecha de hoy por defecto
+  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', ['agregar','pendientes','completados'][i] === tab);
+    });
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+    if (tab === 'pendientes') cargarPendientes();
+    if (tab === 'completados') cargarCompletados();
+  }
+
+  function toast(msg, isError = false) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  function formatFecha(fecha) {
+    return new Date(fecha).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function renderItems(items, containerId, tipo) {
+    const el = document.getElementById(containerId);
+    if (!items.length) {
+      el.innerHTML = `<div class="empty"><span>${tipo === 'pending' ? '📋' : '✅'}</span>${tipo === 'pending' ? 'Sin ítems pendientes' : 'Aún no hay completados'}</div>`;
+      return;
+    }
+    el.innerHTML = items.map(item => `
+      <div class="item-card ${item.esCompletado ? 'done' : ''}" id="card-${item._id}">
+        <div class="item-info">
+          <div class="item-name">${item.nombre}</div>
+          <div class="item-desc">${item.descripcion}</div>
+          <div class="item-meta">
+            <span class="tag tag-date">${formatFecha(item.fecha)}</span>
+            <span class="tag ${item.esCompletado ? 'tag-done' : 'tag-pending'}">${item.esCompletado ? 'completado' : 'pendiente'}</span>
+          </div>
+        </div>
+        <div class="item-actions">
+          ${!item.esCompletado ? `<button class="btn-action btn-complete" onclick="completarItem('${item._id}')">Completar</button>` : ''}
+          <button class="btn-action btn-delete" onclick="eliminarItem('${item._id}', '${tipo}')">Eliminar</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function cargarPendientes() {
+    try {
+      const res = await fetch(`${API}/items/pending`);
+      const data = await res.json();
+      document.getElementById('count-pendientes').textContent = data.count;
+      renderItems(data.data, 'list-pendientes', 'pending');
+    } catch {
+      document.getElementById('list-pendientes').innerHTML = '<div class="empty"><span>⚠️</span>Error al conectar con la API</div>';
+    }
+  }
+
+  async function cargarCompletados() {
+    try {
+      const res = await fetch(`${API}/items/completed`);
+      const data = await res.json();
+      document.getElementById('count-completados').textContent = data.count;
+      renderItems(data.data, 'list-completados', 'completed');
+    } catch {
+      document.getElementById('list-completados').innerHTML = '<div class="empty"><span>⚠️</span>Error al conectar con la API</div>';
+    }
+  }
+
+  async function crearItem() {
+    const nombre = document.getElementById('nombre').value.trim();
+    const descripcion = document.getElementById('descripcion').value.trim();
+    const fecha = document.getElementById('fecha').value;
+
+    if (!nombre || !descripcion || !fecha) {
+      toast('Completa todos los campos', true); return;
+    }
+
+    const btn = document.querySelector('.btn-submit');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+
+    try {
+      const res = await fetch(`${API}/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, descripcion, fecha })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast('✅ Ítem agregado correctamente');
+        document.getElementById('nombre').value = '';
+        document.getElementById('descripcion').value = '';
+        document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+      } else {
+        toast(data.message || 'Error al crear', true);
+      }
+    } catch {
+      toast('No se pudo conectar con la API', true);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Agregar ítem';
+    }
+  }
+
+  async function completarItem(id) {
+    try {
+      const res = await fetch(`${API}/items/${id}/complete`, { method: 'PATCH' });
+      const data = await res.json();
+      if (data.success) {
+        toast('✅ Ítem completado');
+        cargarPendientes();
+      }
+    } catch {
+      toast('Error al completar', true);
+    }
+  }
+
+  async function eliminarItem(id, tipo) {
+    try {
+      const res = await fetch(`${API}/items/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        toast('🗑️ Ítem eliminado');
+        tipo === 'pending' ? cargarPendientes() : cargarCompletados();
+      }
+    } catch {
+      toast('Error al eliminar', true);
+    }
+  }
+</script>
+</body>
+</html>
