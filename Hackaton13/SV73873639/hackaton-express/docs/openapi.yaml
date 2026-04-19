@@ -1,0 +1,151 @@
+openapi: 3.0.0
+info:
+  title: Hackatón Express Pro API
+  description: Documentación de la API desarrollada para la Hackatón de Idat. Incluye manejo de usuarios, órdenes protegidas, uploads e idempotencia.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo local
+
+paths:
+  /api/health:
+    get:
+      summary: Verifica el estado del servidor
+      responses:
+        '200':
+          description: OK
+
+  /api/metrics:
+    get:
+      summary: Retorna las métricas de uso de las rutas
+      responses:
+        '200':
+          description: Métricas devueltas con éxito
+
+  /api/v1/users:
+    get:
+      summary: Obtiene la lista de usuarios
+      responses:
+        '200':
+          description: Lista de usuarios
+    post:
+      summary: Crea un nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+              properties:
+                name:
+                  type: string
+                  example: Juan Pérez
+                email:
+                  type: string
+                  example: juan@example.com
+      responses:
+        '201':
+          description: Usuario creado exitosamente
+
+  /api/v1/orders:
+    get:
+      summary: Obtiene la lista de órdenes (Paginación y Filtros)
+      parameters:
+        - in: header
+          name: x-token
+          required: true
+          schema:
+            type: string
+            example: secret
+          description: Token de acceso requerido
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Lista de órdenes paginada
+        '401':
+          description: No autorizado
+    post:
+      summary: Crea una nueva orden
+      parameters:
+        - in: header
+          name: x-token
+          required: true
+          schema:
+            type: string
+            example: secret
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customerId:
+                  type: integer
+                  example: 101
+                items:
+                  type: array
+                  items:
+                    type: string
+                  example: ["Monitor", "Cable HDMI"]
+      responses:
+        '201':
+          description: Orden creada
+
+  /api/v1/uploads/avatar:
+    post:
+      summary: Sube una imagen de avatar (Máx 2MB)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Archivo subido exitosamente
+        '400':
+          description: Error de validación o archivo faltante
+
+  /api/v1/payments:
+    post:
+      summary: Procesa un pago (Idempotente)
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+            example: "uuid-1234-5678"
+          description: Llave única para evitar cobros duplicados
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  example: 150.50
+      responses:
+        '200':
+          description: Pago devuelto desde la caché (Idempotencia aplicada)
+        '201':
+          description: Nuevo pago procesado exitosamente
