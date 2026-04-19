@@ -1,0 +1,16 @@
+{
+  "name": "sv73449503",
+  "version": "1.0.0",
+  "description": "Reto 1 - MongoDB + Mongoose (armarios)",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "seed": "node scripts/seed.js",
+    "check": "node scripts/check.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.12.0"
+  }
+}

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Compras API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #5a67d8;
+        }
+        
+        .item-list {
+            margin-top: 20px;
+        }
+        
+        .item {
+            background: #f7f7f7;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .item-info {
+            flex: 1;
+        }
+        
+        .item-name {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .item-desc {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .item-date {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .item-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .status-completed {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-complete {
+            background: #4caf50;
+        }
+        
+        .btn-delete {
+            background: #f44336;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: #e0e0e0;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Lista de Compras</h1>
+        
+        <!-- Crear Ítem -->
+        <div class="card">
+            <h2>➕ Agregar Nuevo Ítem</h2>
+            <div id="createMessage"></div>
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" id="itemName" placeholder="Ej: Comprar leche">
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea id="itemDesc" rows="3" placeholder="Descripción del producto..."></textarea>
+            </div>
+            <button onclick="createItem()">Crear Ítem</button>
+        </div>
+        
+        <!-- Lista de Ítems -->
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('pending')">📋 Pendientes</div>
+                <div class="tab" onclick="switchTab('completed')">✅ Completados</div>
+            </div>
+            <div id="itemsList">
+                <div class="loading">Cargando...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let currentTab = 'pending';
+        
+        // Obtener items según el tab actual
+        async function fetchItems() {
+            const endpoint = currentTab === 'pending' ? '/items/pending' : '/items/completed';
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`);
+                if (!response.ok) throw new Error('Error al cargar items');
+                const items = await response.json();
+                renderItems(items);
+            } catch (error) {
+                document.getElementById('itemsList').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Renderizar items en el DOM
+        function renderItems(items) {
+            const container = document.getElementById('itemsList');
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="loading">✨ No hay items en esta lista</div>';
+                return;
+            }
+            
+            container.innerHTML = items.map(item => `
+                <div class="item">
+                    <div class="item-info">
+                        <div class="item-name">${escapeHtml(item.nombre)}</div>
+                        <div class="item-desc">${escapeHtml(item.descripcion)}</div>
+                        <div class="item-date">📅 ${new Date(item.fecha).toLocaleDateString()}</div>
+                    </div>
+                    <div class="item-actions">
+                        ${!item.esCompletado ? 
+                            `<button class="btn-complete" onclick="completeItem('${item._id}')">✓ Completar</button>` : 
+                            `<span class="item-status status-completed">✓ Completado</span>`
+                        }
+                        <button class="btn-delete" onclick="deleteItem('${item._id}')">🗑 Eliminar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Crear nuevo item
+        async function createItem() {
+            const nombre = document.getElementById('itemName').value;
+            const descripcion = document.getElementById('itemDesc').value;
+            
+            if (!nombre || !descripcion) {
+                showMessage('createMessage', '❌ Nombre y descripción son obligatorios', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/items`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, descripcion })
+                });
+                
+                if (!response.ok) throw new Error('Error al crear');
+                
+                showMessage('createMessage', '✅ Ítem creado exitosamente', 'success');
+                document.getElementById('itemName').value = '';
+                document.getElementById('itemDesc').value = '';
+                fetchItems();
+                
+                setTimeout(() => {
+                    document.getElementById('createMessage').innerHTML = '';
+                }, 3000);
+            } catch (error) {
+                showMessage('createMessage', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Completar item
+        async function completeItem(id) {
+            try {
+                const response = await fetch(`${API_URL}/items/${id}/complete`, {
+                    method: 'PATCH'
+                });
+                
+                if (!response.ok) throw new Error('Error al completar');
+                
+                fetchItems();
+                if (currentTab === 'completed') fetchItems();
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+        
+        // Eliminar item
+        async function deleteItem(id) {
+            if (!confirm('¿Estás seguro de eliminar este ítem?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/items/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) throw new Error('Error al eliminar');
+                
+                fetchItems();
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+        
+        // Cambiar entre pestañas
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach((t, i) => {
+                t.classList.toggle('active', (tab === 'pending' && i === 0) || (tab === 'completed' && i === 1));
+            });
+            fetchItems();
+        }
+        
+        // Mostrar mensajes temporales
+        function showMessage(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                if (container.innerHTML === `<div class="${type}">${message}</div>`) {
+                    container.innerHTML = '';
+                }
+            }, 3000);
+        }
+        
+        // Escapar HTML para evitar XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Inicializar
+        fetchItems();
+    </script>
+</body>
+</html>
