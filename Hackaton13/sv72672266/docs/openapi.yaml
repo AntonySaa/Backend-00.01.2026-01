@@ -1,0 +1,387 @@
+openapi: 3.0.0
+info:
+  title: API Express Pro - Hackatón 13
+  description: API modular con Express.js con middlewares, validaciones, uploads, idempotencia y métricas
+  version: 1.0.0
+  contact:
+    name: API Support
+    url: http://localhost:3000
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://localhost:3000
+    description: Development server (HTTPS)
+
+tags:
+  - name: Health & Metrics
+    description: Estado del servidor y estadísticas
+  - name: Users
+    description: Gestión de usuarios
+  - name: Orders
+    description: Gestión de órdenes (requiere autenticación)
+  - name: Streaming
+    description: Endpoints de streaming
+
+paths:
+  /api/health:
+    get:
+      tags:
+        - Health & Metrics
+      summary: Health check
+      description: Retorna estado de salud del servidor con información del sistema
+      responses:
+        '200':
+          description: Servidor operativo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  platform:
+                    type: string
+                  type:
+                    type: string
+                  totalMemGB:
+                    type: string
+
+  /api/metrics:
+    get:
+      tags:
+        - Health & Metrics
+      summary: Obtener métricas
+      description: Retorna estadísticas de uso por ruta
+      responses:
+        '200':
+          description: Métricas obtenidas
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/v1/user:
+    get:
+      tags:
+        - Users
+      summary: Listar usuarios
+      description: Obtiene la lista de todos los usuarios registrados
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      tags:
+        - Users
+      summary: Crear usuario
+      description: Crea un nuevo usuario validando name y email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+              properties:
+                name:
+                  type: string
+                  example: Juan Pérez
+                email:
+                  type: string
+                  format: email
+                  example: juan@example.com
+      responses:
+        '201':
+          description: Usuario creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Datos inválidos o faltantes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/user/{id}:
+    get:
+      tags:
+        - Users
+      summary: Obtener usuario por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Usuario no encontrado
+
+  /api/v1/order:
+    get:
+      tags:
+        - Orders
+      summary: Listar órdenes
+      description: Obtiene lista paginada de órdenes (requiere x-token)
+      parameters:
+        - name: x-token
+          in: header
+          required: true
+          schema:
+            type: string
+          example: secret
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        '200':
+          description: Lista de órdenes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+                  total:
+                    type: integer
+        '401':
+          description: Token no válido o faltante
+
+    post:
+      tags:
+        - Orders
+      summary: Crear orden
+      description: Crea una nueva orden (requiere x-token)
+      parameters:
+        - name: x-token
+          in: header
+          required: true
+          schema:
+            type: string
+          example: secret
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+                - customerID
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: string
+                  example: [item1, item2]
+                customerID:
+                  type: string
+                  example: cust123
+      responses:
+        '201':
+          description: Orden creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Datos inválidos
+        '401':
+          description: Token no válido
+
+  /api/v1/order/export:
+    get:
+      tags:
+        - Orders
+      summary: Exportar órdenes a CSV
+      parameters:
+        - name: x-token
+          in: header
+          required: true
+          schema:
+            type: string
+          example: secret
+      responses:
+        '200':
+          description: Archivo CSV
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /api/v1/order/payment:
+    post:
+      tags:
+        - Orders
+      summary: Crear pago (Idempotente)
+      description: Crea un pago con garantía de idempotencia usando idempotency-key
+      parameters:
+        - name: idempotency-key
+          in: header
+          required: true
+          schema:
+            type: string
+          example: payment-001
+      responses:
+        '201':
+          description: Pago creado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  paymentID:
+                    type: string
+                  status:
+                    type: string
+                    example: ok
+        '200':
+          description: Pago repetido (idempotente)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  paymentID:
+                    type: string
+                  status:
+                    type: string
+        '400':
+          description: Header idempotency-key requerido
+
+  /api/v1/order/avatar:
+    post:
+      tags:
+        - Orders
+      summary: Subir avatar
+      description: Sube un archivo de imagen como avatar (máx 2MB, solo imágenes)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - avatar
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Avatar subido exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  originalName:
+                    type: string
+                  storedAt:
+                    type: string
+                  size:
+                    type: integer
+        '400':
+          description: Solo se aceptan imágenes
+
+  /api/v2/stream:
+    get:
+      tags:
+        - Streaming
+      summary: SSE Stream
+      description: Emite 5 eventos cada segundo usando Server-Sent Events
+      responses:
+        '200':
+          description: Stream de eventos
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                example: "data: tick 0\n\ndata: tick 1\n\n..."
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Juan Pérez
+        email:
+          type: string
+          example: juan@example.com
+        createdAt:
+          type: string
+          format: date-time
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        items:
+          type: array
+          items:
+            type: string
+          example: [item1, item2]
+        customerID:
+          type: string
+          example: cust123
+        status:
+          type: string
+          example: pending
+        createdAt:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
