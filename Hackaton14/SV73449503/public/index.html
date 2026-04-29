@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hackaton 14 - Chat Persistente</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <div class="brand-row">
+          <div class="brand-logo" aria-hidden="true">
+            <img class="brand-logo-img" src="/assets/bot-avatar.svg" alt="" />
+          </div>
+          <div>
+            <h1>Hackaton 14</h1>
+            <span class="status-pill">Canal cifrado activo</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="controls">
+        <form id="chat-form">
+          <input id="author" type="text" placeholder="Tu nombre" maxlength="30" required />
+          <input id="message" type="text" placeholder="Escribe un mensaje..." maxlength="280" required />
+          <button type="submit">Enviar</button>
+        </form>
+
+        <div class="actions">
+          <button id="clear-btn" class="danger">Borrar historial</button>
+          <span class="hint">Tip: usa <strong>/bot tu pregunta</strong> para llamar al asistente.</span>
+        </div>
+      </section>
+
+      <section>
+        <ul id="messages" class="messages"></ul>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

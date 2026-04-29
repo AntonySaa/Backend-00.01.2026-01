@@ -1,0 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-main: #031127;
+  --bg-soft: #0a2b5f;
+  --card: #f8fbff;
+  --panel: #ffffff;
+  --text: #10233f;
+  --muted: #5f6f87;
+  --brand: #0f4ea6;
+  --brand-strong: #0a3b80;
+  --success: #0f7a5a;
+  --danger: #b4232f;
+  --border: #c9d8ec;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Public Sans', 'Segoe UI', sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 10% 10%, rgba(117, 164, 239, 0.35) 0%, transparent 35%),
+    radial-gradient(circle at 90% 0%, rgba(23, 84, 177, 0.32) 0%, transparent 40%),
+    linear-gradient(160deg, var(--bg-main) 0%, var(--bg-soft) 70%, #0f3978 100%);
+  min-height: 100vh;
+  padding: 20px 0;
+}
+
+.container {
+  width: min(960px, 95vw);
+  margin: 18px auto;
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 22px 46px rgba(2, 15, 37, 0.32);
+  animation: reveal 380ms ease-out both;
+}
+
+.header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+
+.brand-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.brand-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(140deg, var(--brand) 0%, var(--brand-strong) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.brand-logo-img {
+  width: 30px;
+  height: 30px;
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.28rem;
+}
+
+.status-pill {
+  display: inline-flex;
+  margin-top: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--success);
+  background: #eaf9f2;
+  border: 1px solid #bce8d7;
+}
+
+#chat-form {
+  display: grid;
+  grid-template-columns: 180px 1fr 140px;
+  gap: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+input,
+button {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 11px 12px;
+  font-size: 14px;
+}
+
+input {
+  background: #fbfdff;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(15, 78, 166, 0.15);
+}
+
+button {
+  cursor: pointer;
+  background: linear-gradient(140deg, var(--brand) 0%, var(--brand-strong) 100%);
+  color: #fff;
+  border-color: var(--brand-strong);
+  font-weight: 600;
+  transition: transform 140ms ease, filter 140ms ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+button.danger {
+  background: linear-gradient(140deg, #d53844 0%, var(--danger) 100%);
+  border-color: #a61f2a;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.messages {
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.message {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 7px 18px rgba(15, 50, 106, 0.08);
+  animation: popIn 200ms ease-out both;
+}
+
+.message.bot {
+  border-left: 4px solid var(--brand);
+  background: #eff5ff;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.message-text {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.message-actions button {
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  body {
+    padding: 10px 0;
+  }
+
+  .container {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  #chat-form {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

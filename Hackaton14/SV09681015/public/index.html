@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexChat — Chat en Tiempo Real</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;800&display=swap"
+    rel="stylesheet" />
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+  <!-- ── Login ──────────────────────────────────────── -->
+  <div id="login-screen">
+    <div class="login-card">
+      <h2>Chat<span>elier</span></h2>
+      <p>// el arte de chatear, con IA privada</p>
+      <input id="username-input" class="login-input" type="text" placeholder="Tu nombre de usuario..." maxlength="20" />
+      <button class="login-btn" onclick="doLogin()">Entrar al Chat</button>
+      <div class="bot-hint">
+        Escribe <code>@bot tu pregunta</code> para<br />activar el asistente de IA local
+      </div>
+    </div>
+  </div>
+
+  <!-- ── App ────────────────────────────────────────── 💬-->
+  <header>
+    <div class="logo">
+      <div class="logo-icon"><i data-lucide="message-circle-more" width="150px"></i></div>
+      <span class="logo-text">Chat<span>elier</span></span>
+    </div>
+    <div class="header-right">
+      <div class="status-dot"></div>
+      <span class="status-text" id="online-count">Conectado</span>
+    </div>
+  </header>
+
+  <div id="chat-app">
+    <div class="toolbar">
+      <span class="user-badge" id="current-user-badge">—</span>
+      <div class="toolbar-spacer"></div>
+      <button class="btn-clear" onclick="clearHistory()"><i data-lucide="eraser"></i> Limpiar historial</button>
+    </div>
+
+    <div id="messages">
+      <div class="empty-state" id="empty-state">
+        <div class="big">💬</div>
+        <p>No hay mensajes aún. ¡Sé el primero!</p>
+      </div>
+    </div>
+
+    <div class="typing-hint" id="typing-hint"></div>
+
+    <div class="input-area">
+      <textarea id="msg-input" placeholder="Escribe un mensaje... (@bot pregunta para el asistente)" rows="1"
+        maxlength="1000"></textarea>
+      <button class="send-btn" onclick="sendMessage()"><i data-lucide="arrow-big-right"></i></button>
+    </div>
+  </div>
+
+  <!--link carga de iconos Lucide-->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>lucide.createIcons();</script>
+
+  <script>
+    const socket = io();
+    let myUsername = '';
+
+    // ── Login ───────────────────────────────────────
+    function doLogin() {
+      const val = document.getElementById('username-input').value.trim();
+      if (!val) return;
+      myUsername = val;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('chat-app').style.display = 'flex';
+      document.getElementById('current-user-badge').textContent = '@ ' + myUsername;
+    }
+
+    document.getElementById('username-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+
+    // ── Auto-grow textarea ──────────────────────────
+    const msgInput = document.getElementById('msg-input');
+    msgInput.addEventListener('input', () => {
+      msgInput.style.height = 'auto';
+      msgInput.style.height = Math.min(msgInput.scrollHeight, 100) + 'px';
+    });
+    msgInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // ── Send ────────────────────────────────────────
+    function sendMessage() {
+      const content = msgInput.value.trim();
+      if (!content || !myUsername) return;
+      socket.emit('send_message', { username: myUsername, content });
+      msgInput.value = '';
+      msgInput.style.height = 'auto';
+
+      // Bot typing indicator
+      if (/^(@bot|\/bot)\s+/i.test(content)) {
+        document.getElementById('typing-hint').textContent = '🤖 NexBot está pensando...';
+      }
+    }
+
+    // ── Render message ──────────────────────────────
+    function renderMessage(msg) {
+      const container = document.getElementById('messages');
+      const empty = document.getElementById('empty-state');
+      if (empty) empty.remove();
+
+      const isOwn = msg.username === myUsername;
+      const isBot = msg.username === '🤖 NexBot' || msg.isBot;
+
+      const div = document.createElement('div');
+      div.className = `msg-bubble ${isOwn ? 'own' : isBot ? 'bot' : 'other'}`;
+      div.dataset.id = msg.id;
+      div.dataset.username = msg.username;
+
+      const timeStr = msg.created_at
+        ? new Date(msg.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
+        : '';
+
+      div.innerHTML = `
+        <div class="msg-meta">
+          <span class="msg-username">${escapeHtml(msg.username)}</span>
+          <span class="msg-time">${timeStr}</span>
+          ${msg.edited ? '<span class="msg-edited">(editado)</span>' : ''}
+        </div>
+        <div class="msg-content" id="content-${msg.id}">${escapeHtml(msg.content)}</div>
+        ${isOwn ? `
+        <div class="msg-actions">
+          <button class="act-btn act-edit" onclick="startEdit(${msg.id})">✏ Editar</button>
+          <button class="act-btn act-delete" onclick="deleteMsg(${msg.id})">✕ Borrar</button>
+        </div>
+        <div class="edit-form" id="edit-form-${msg.id}">
+          <input class="edit-input" id="edit-input-${msg.id}" value="${escapeHtml(msg.content)}" />
+          <button class="edit-save" onclick="saveEdit(${msg.id})">✓</button>
+          <button class="edit-cancel" onclick="cancelEdit(${msg.id})">✕</button>
+        </div>` : ''}
+      `;
+
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ── Edit ────────────────────────────────────────
+    function startEdit(id) {
+      document.getElementById(`edit-form-${id}`).classList.add('active');
+      document.getElementById(`edit-input-${id}`).focus();
+    }
+    function cancelEdit(id) {
+      document.getElementById(`edit-form-${id}`).classList.remove('active');
+    }
+    function saveEdit(id) {
+      const val = document.getElementById(`edit-input-${id}`).value.trim();
+      if (!val) return;
+      socket.emit('edit_message', { id, content: val, username: myUsername });
+      cancelEdit(id);
+    }
+
+    // ── Delete ──────────────────────────────────────
+    function deleteMsg(id) {
+      if (confirm('¿Eliminar este mensaje?')) {
+        socket.emit('delete_message', { id });
+      }
+    }
+
+    // ── Clear history ───────────────────────────────
+    function clearHistory() {
+      if (confirm('¿Limpiar TODO el historial del chat?')) {
+        socket.emit('clear_history');
+      }
+    }
+
+    // ── Socket events ───────────────────────────────
+    socket.on('history', (messages) => {
+      const container = document.getElementById('messages');
+      container.innerHTML = '';
+      if (messages.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" id="empty-state">
+            <div class="big">💬</div>
+            <p>No hay mensajes aún. ¡Sé el primero!</p>
+          </div>`;
+      } else {
+        messages.forEach(renderMessage);
+      }
+    });
+
+    socket.on('new_message', (msg) => {
+      document.getElementById('typing-hint').textContent = '';
+      renderMessage(msg);
+    });
+
+    socket.on('message_edited', ({ id, content }) => {
+      const el = document.getElementById(`content-${id}`);
+      if (el) {
+        el.textContent = content;
+        const bubble = el.closest('.msg-bubble');
+        const meta = bubble?.querySelector('.msg-meta');
+        if (meta && !meta.querySelector('.msg-edited')) {
+          meta.insertAdjacentHTML('beforeend', '<span class="msg-edited">(editado)</span>');
+        }
+        const input = document.getElementById(`edit-input-${id}`);
+        if (input) input.value = content;
+      }
+    });
+
+    socket.on('message_deleted', ({ id }) => {
+      const el = document.querySelector(`.msg-bubble[data-id="${id}"]`);
+      if (el) {
+        el.style.animation = 'none';
+        el.style.opacity = '0';
+        el.style.transform = 'scale(0.9)';
+        el.style.transition = 'all 0.2s';
+        setTimeout(() => el.remove(), 200);
+      }
+    });
+
+    socket.on('history_cleared', () => {
+      const container = document.getElementById('messages');
+      container.innerHTML = `
+        <div class="sys-msg">Historial eliminado</div>
+        <div class="empty-state" id="empty-state">
+          <div class="big">💬</div>
+          <p>Chat limpio. ¡Empieza una nueva conversación!</p>
+        </div>`;
+    });
+  </script>
+</body>
+
+</html>

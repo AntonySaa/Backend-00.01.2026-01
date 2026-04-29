@@ -1,0 +1,215 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "API Express Pro - Hackatón 13",
+    "description": "API modular con middlewares, validaciones, uploads, idempotencia y métricas",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3000",
+  "basePath": "/",
+  "schemes": ["http", "https"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Retorna estado de salud del servidor",
+        "responses": {
+          "200": {
+            "description": "OK - Server is healthy",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/metrics": {
+      "get": {
+        "summary": "Obtener métricas",
+        "description": "Retorna métricas de uso de rutas",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          }
+        }
+      }
+    },
+    "/api/v1/user": {
+      "get": {
+        "summary": "Listar usuarios",
+        "responses": {
+          "200": {
+            "description": "Lista de usuarios",
+            "schema": { "type": "array" }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear usuario",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "email": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Usuario creado"
+          }
+        }
+      }
+    },
+    "/api/v1/user/{id}": {
+      "get": {
+        "summary": "Obtener usuario por ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuario encontrado"
+          }
+        }
+      }
+    },
+    "/api/v1/order": {
+      "get": {
+        "summary": "Listar órdenes",
+        "parameters": [
+          {
+            "name": "x-token",
+            "in": "header",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de órdenes"
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear orden",
+        "parameters": [
+          {
+            "name": "x-token",
+            "in": "header",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": { "type": "array" },
+                "customerID": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Orden creada"
+          }
+        }
+      }
+    },
+    "/api/v1/order/export": {
+      "get": {
+        "summary": "Exportar órdenes a CSV",
+        "parameters": [
+          {
+            "name": "x-token",
+            "in": "header",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file"
+          }
+        }
+      }
+    },
+    "/api/v1/order/payment": {
+      "post": {
+        "summary": "Crear pago (idempotente)",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Pago creado"
+          }
+        }
+      }
+    },
+    "/api/v1/order/avatar": {
+      "post": {
+        "summary": "Subir avatar",
+        "parameters": [
+          {
+            "name": "avatar",
+            "in": "formData",
+            "type": "file",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Avatar subido"
+          }
+        }
+      }
+    },
+    "/api/v2/stream": {
+      "get": {
+        "summary": "SSE stream",
+        "description": "Emite 5 ticks cada segundo",
+        "responses": {
+          "200": {
+            "description": "Stream de eventos"
+          }
+        }
+      }
+    }
+  }
+}

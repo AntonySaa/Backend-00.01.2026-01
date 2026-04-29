@@ -1,0 +1,30 @@
+{
+  "name": "hackaton-13-sv72672266",
+  "version": "1.0.0",
+  "description": "API modular con Express.js",
+  "main": "bin/www",
+  "scripts": {
+    "dev": "nodemon ./bin/www",
+    "start": "node ./bin/www",
+    "docgen": "node swagger.js"
+  },
+  "dependencies": {
+    "compression": "^1.8.1",
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.6",
+    "debug": "~2.6.9",
+    "dotenv": "^17.4.2",
+    "ejs": "^5.0.2",
+    "express": "^4.22.1",
+    "express-rate-limit": "^8.3.2",
+    "helmet": "^8.1.0",
+    "http-errors": "~1.6.3",
+    "morgan": "^1.10.1",
+    "multer": "^2.1.1",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "swagger-autogen": "^2.23.7"
+  }
+}

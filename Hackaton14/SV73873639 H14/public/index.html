@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Hackathon - Socket.io</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Chat en Tiempo Real</h1>
+      <div class="status" id="status">Desconectado</div>
+    </header>
+
+    <div class="login-screen" id="loginScreen">
+      <div class="login-box">
+        <h2>Ingresa tu nombre</h2>
+        <input type="text" id="usernameInput" placeholder="Tu nombre..." maxlength="20">
+        <button id="joinBtn">Entrar al Chat</button>
+      </div>
+    </div>
+
+    <div class="chat-container" id="chatContainer" style="display: none;">
+      <div class="sidebar">
+        <div class="user-info">
+          <span id="currentUser">Usuario</span>
+          <button id="logoutBtn" title="Salir">✕</button>
+        </div>
+        <div class="controls">
+          <button type="button" id="clearHistoryBtn" class="btn btn-danger">🗑️ Borrar todo el chat</button>
+        </div>
+        <div class="info-box">
+          <h4>Comandos:</h4>
+          <ul>
+            <li><strong>@bot</strong> - Invocar asistente AI</li>
+            <li><strong>Clic en mensaje</strong> - Editar</li>
+            <li><strong>Doble clic</strong> - Eliminar</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="main-chat">
+        <div class="messages" id="messages"></div>
+
+        <div class="message-input-area">
+          <textarea
+            id="messageInput"
+            placeholder="Escribe tu mensaje... Usa @bot para IA"
+            rows="2"
+          ></textarea>
+          <button id="sendBtn">Enviar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/client.js"></script>
+</body>
+</html>

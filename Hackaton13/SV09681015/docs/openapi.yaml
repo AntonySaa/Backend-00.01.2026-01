@@ -1,0 +1,354 @@
+openapi: 3.0.3
+info:
+  title: Hackatón Express Pro API
+  description: |
+    API modular con Express.js desarrollada para el Hackatón Express Pro.
+    Incluye middlewares personalizados, rutas versionadas, uploads, idempotencia y métricas.
+  version: 1.0.0
+  contact:
+    name: Hackatón Express Pro
+servers:
+  - url: http://localhost:3000
+    description: Servidor local
+
+tags:
+  - name: Health
+    description: Estado del servidor
+  - name: Data
+    description: Endpoint base de datos
+  - name: Users
+    description: Gestión de usuarios (v1)
+  - name: Orders
+    description: Gestión de órdenes (v1) - requiere x-token
+  - name: Uploads
+    description: Subida de archivos
+  - name: Payments
+    description: Pagos idempotentes
+  - name: Metrics
+    description: Métricas de uso
+  - name: Stream
+    description: Server-Sent Events
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Estado del servidor
+      responses:
+        '200':
+          description: Servidor activo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                  uptime:
+                    type: string
+
+  /api/data:
+    post:
+      tags: [Data]
+      summary: Recibe datos JSON
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example: { "key": "value" }
+      responses:
+        '200':
+          description: Datos recibidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received:
+                    type: boolean
+                  data:
+                    type: object
+        '415':
+          description: Content-Type inválido
+
+  /api/v1/users:
+    get:
+      tags: [Users]
+      summary: Lista todos los usuarios
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+    post:
+      tags: [Users]
+      summary: Crea un usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '409':
+          description: Email ya registrado
+        '422':
+          description: Validación fallida
+
+  /api/v1/users/{id}:
+    get:
+      tags: [Users]
+      summary: Obtiene un usuario por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Usuario no encontrado
+
+  /api/v1/orders:
+    get:
+      tags: [Orders]
+      summary: Lista órdenes con paginación, filtro y orden
+      security:
+        - XToken: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, shipped, delivered]
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: customerId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de órdenes
+        '401':
+          description: Token inválido
+    post:
+      tags: [Orders]
+      summary: Crea una orden
+      security:
+        - XToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderInput'
+      responses:
+        '201':
+          description: Orden creada
+        '401':
+          description: Token inválido
+        '422':
+          description: Validación fallida
+
+  /api/v1/orders/export:
+    get:
+      tags: [Orders]
+      summary: Exporta órdenes como CSV (streaming)
+      security:
+        - XToken: []
+      responses:
+        '200':
+          description: Archivo CSV
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /api/v1/uploads/avatar:
+    post:
+      tags: [Uploads]
+      summary: Sube una imagen de avatar (máx 2MB)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Avatar subido correctamente
+        '400':
+          description: Archivo inválido o faltante
+        '413':
+          description: Archivo mayor a 2MB
+
+  /api/v1/payments:
+    post:
+      tags: [Payments]
+      summary: Procesa un pago (idempotente)
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            example: uuid-unico-por-pago
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInput'
+      responses:
+        '201':
+          description: Pago procesado
+          headers:
+            X-Idempotent-Replayed:
+              schema:
+                type: string
+              description: '"true" si es respuesta cacheada'
+        '400':
+          description: Falta Idempotency-Key
+        '422':
+          description: Validación fallida
+
+  /api/metrics:
+    get:
+      tags: [Metrics]
+      summary: Métricas de uso de la API
+      responses:
+        '200':
+          description: Métricas actuales
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uptime:
+                    type: string
+                  totalRequests:
+                    type: integer
+                  routes:
+                    type: object
+
+  /api/stream:
+    get:
+      tags: [Stream]
+      summary: SSE - emite 5 ticks (uno por segundo)
+      responses:
+        '200':
+          description: Stream de eventos
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        createdAt:
+          type: string
+
+    UserInput:
+      type: object
+      required: [name, email]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          example: María García
+        email:
+          type: string
+          format: email
+          example: maria@example.com
+
+    OrderInput:
+      type: object
+      required: [items, customerId]
+      properties:
+        items:
+          type: array
+          items:
+            type: string
+          example: ["laptop", "mouse"]
+        customerId:
+          type: string
+          example: c123
+
+    PaymentInput:
+      type: object
+      required: [amount, currency, description]
+      properties:
+        amount:
+          type: number
+          example: 99.99
+        currency:
+          type: string
+          enum: [USD, EUR, PEN]
+          example: USD
+        description:
+          type: string
+          example: Suscripción mensual
+
+  securitySchemes:
+    XToken:
+      type: apiKey
+      in: header
+      name: x-token
+    ApiKey:
+      type: apiKey
+      in: header
+      name: x-api-key

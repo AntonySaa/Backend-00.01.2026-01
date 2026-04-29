@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Persistente | Hackathon</title>
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .chat-container {
+      width: 600px;
+      max-width: 95%;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    .chat-header {
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .chat-header h1 { font-size: 1.5rem; margin-bottom: 5px; }
+    .chat-header p { font-size: 0.8rem; opacity: 0.9; }
+    .chat-messages {
+      height: 400px;
+      overflow-y: auto;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+    .message {
+      margin-bottom: 15px;
+      padding: 10px 15px;
+      border-radius: 15px;
+      max-width: 70%;
+      word-wrap: break-word;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .message-user {
+      background: #007bff;
+      color: white;
+      margin-left: auto;
+      text-align: right;
+    }
+    .message-bot {
+      background: #28a745;
+      color: white;
+      margin-right: auto;
+    }
+    .message-text { font-size: 14px; margin: 5px 0; }
+    .message small { font-size: 10px; opacity: 0.8; }
+    .edit-btn, .delete-btn {
+      background: rgba(255,255,255,0.3);
+      border: none;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 10px;
+      margin-top: 5px;
+      margin-right: 5px;
+    }
+    .edit-btn:hover { background: rgba(255,255,255,0.5); }
+    .delete-btn { background: rgba(220,53,69,0.8); }
+    .delete-btn:hover { background: rgba(220,53,69,1); }
+    .clear-btn {
+      width: calc(100% - 40px);
+      margin: 10px 20px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    .clear-btn:hover { background: #c82333; }
+    .input-area {
+      display: flex;
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #ddd;
+      gap: 10px;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 25px;
+      outline: none;
+      font-size: 14px;
+    }
+    .input-area input:focus { border-color: #007bff; }
+    .input-area button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .input-area button:hover { background: #0056b3; }
+    .connection-status {
+      padding: 5px;
+      text-align: center;
+      font-size: 12px;
+      background: #e9ecef;
+    }
+    .connected { color: #28a745; }
+    .disconnected { color: #dc3545; }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h1>💬 Chat Persistente</h1>
+      <p>En tiempo real | Multi-cliente | Con Bot 🤖</p>
+    </div>
+    
+    <div class="connection-status" id="status">🔌 Conectando...</div>
+    
+    <button class="clear-btn" id="clearButton">🗑️ Borrar todo el historial</button>
+    
+    <div class="chat-messages" id="chatMessages"></div>
+    
+    <div class="input-area">
+      <input type="text" id="messageInput" placeholder="Escribe un mensaje..." autocomplete="off">
+      <button id="sendButton">📤 Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    const socket = io('http://localhost:3000');
+    const chatDiv = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const clearButton = document.getElementById('clearButton');
+    const statusDiv = document.getElementById('status');
+    
+    socket.on('connect', () => {
+      statusDiv.innerHTML = '🟢 Conectado al servidor';
+      statusDiv.className = 'connection-status connected';
+    });
+    
+    socket.on('disconnect', () => {
+      statusDiv.innerHTML = '🔴 Desconectado del servidor';
+      statusDiv.className = 'connection-status disconnected';
+    });
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    function addMessageToChat(message) {
+      const messageDiv = document.createElement('div');
+      messageDiv.id = `msg-${message.id}`;
+      messageDiv.className = `message message-${message.author}`;
+      
+      const time = new Date(message.createdAt).toLocaleTimeString();
+      
+      let buttons = '';
+      if (message.author !== 'bot') {
+        buttons = `
+          <div style="margin-top: 5px;">
+            <button class="edit-btn" onclick="editMessage(${message.id})"> Editar</button>
+            <button class="delete-btn" onclick="deleteMessage(${message.id})"> Eliminar</button>
+          </div>
+        `;
+      }
+      
+      messageDiv.innerHTML = `
+        <strong>${message.author === 'bot' ? ' Bot' : ' Usuario'}:</strong>
+        <div class="message-text">${escapeHtml(message.text)}</div>
+        <small>${time}</small>
+        ${buttons}
+      `;
+      
+      chatDiv.appendChild(messageDiv);
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+    }
+    
+    //  Editar mensaje
+    window.editMessage = async (id) => {
+      const newText = prompt(' Editar mensaje:');
+      if (newText && newText.trim()) {
+        try {
+          const response = await fetch(`http://localhost:3000/api/chat/edit-message/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: newText.trim() })
+          });
+          
+          if (!response.ok) {
+            console.error('Error al editar');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+    };
+    
+    //  Eliminar mensaje individual
+    window.deleteMessage = async (id) => {
+      if (confirm(' ¿Eliminar este mensaje?')) {
+        try {
+          const response = await fetch(`http://localhost:3000/api/chat/delete-message/${id}`, {
+            method: 'DELETE'
+          });
+          
+          if (!response.ok) {
+            console.error('Error al eliminar');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+    };
+    
+    function sendMessage() {
+      const text = messageInput.value.trim();
+      if (text) {
+        socket.emit('sendMessage', {
+          text: text,
+          author: 'user'
+        });
+        messageInput.value = '';
+      }
+    }
+    
+    // Cargar mensajes existentes
+    fetch('http://localhost:3000/api/messages')
+      .then(res => res.json())
+      .then(messages => {
+        messages.forEach(msg => addMessageToChat(msg));
+        console.log(` Cargados ${messages.length} mensajes`);
+      })
+      .catch(err => console.error('Error:', err));
+    
+    // Escuchar eventos de Socket.io
+    socket.on('newMessage', (message) => {
+      addMessageToChat(message);
+    });
+    
+    socket.on('messageEdited', ({ id, newText }) => {
+      const msgDiv = document.getElementById(`msg-${id}`);
+      if (msgDiv) {
+        msgDiv.querySelector('.message-text').innerHTML = escapeHtml(newText);
+      }
+    });
+    
+    socket.on('messageRemoved', (id) => {
+      const msgDiv = document.getElementById(`msg-${id}`);
+      if (msgDiv) {
+        msgDiv.remove();
+      }
+    });
+    
+    socket.on('historyCleared', () => {
+      chatDiv.innerHTML = '';
+    });
+    
+    // Botón borrar todo
+    clearButton.addEventListener('click', () => {
+      if (confirm(' ¿Borrar TODOS los mensajes?')) {
+        fetch('http://localhost:3000/api/chat/clear-history', { method: 'DELETE' })
+          .then(() => {
+            chatDiv.innerHTML = '';
+          })
+          .catch(err => console.error('Error:', err));
+      }
+    });
+    
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>
