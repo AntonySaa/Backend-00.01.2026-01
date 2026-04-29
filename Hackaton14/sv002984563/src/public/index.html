@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat app</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="login" class="modal">
+  <div class="modal-box">
+    <h2>Ingresa tu nombre</h2>
+    <input type="text" id="username" placeholder="Tu nombre">
+    <button id="enterBtn">Entrar</button>
+  </div>
+</div>
+
+<div id="chat" style="display:none;">
+
+    
+</div>
+    <div class="container">
+        
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Chat</h2>
+            </div>
+
+            <div id="chatList" class="chat-list"></div>
+        </div>
+
+        <div class="chat">
+            <div class="chat-header" id="chatHeader">
+            </div>
+
+            <div class="messages" id="messages"></div>
+            
+            <div class="input-area">
+                <input 
+                type="text" 
+                id="messageInput" 
+                placeholder="Escribe un mensaje..."
+                >
+                <button id="sendBtn">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+
+
+</body>
+</html>
