@@ -49,3 +49,30 @@ Richard
 - Conexión con MongoDB usando Mongoose.
 - Modelos, esquemas, operaciones CRUD.  
 **Hackatón:** Implementar un CRUD completo para productos y usuarios en Express + MongoDB.
+
+
+## Semana 14: WebSockets y subida de archivos
+- Comunicación en tiempo real con Socket.io.
+- Uso de Multer para carga de archivos.  
+**Hackatón:** Crear un chat en tiempo real para soporte y subida de imágenes de producto.
+
+## Semana 15: Autenticación y Sesiones
+- Cookies, sessions en Express.
+- Login con session o token.  
+**Hackatón:** Implementar sistema de login y logout con Express-session o cookie-parser.
+
+## Semana 16: Seguridad con JWT y OAuth
+- Uso de JWT en autenticación.
+- OAuth con Google.  
+**Hackatón:** Proteger rutas privadas con JWT y simular OAuth con GitHub.
+
+## Semana 17: Pasarelas de Pago y Despliegue
+- Integración con Stripe y Culqi.
+- Despliegue en Render y Azure.  
+- Despliegue en Docker
+**Hackatón:** Integrar Stripe o Culqi en el flujo de compra y desplegar el proyecto en línea.
+
+## Semana 18: Tutoría y Presentación Final
+- Asesoría técnica personalizada.
+- Demo final y evaluación del proyecto.  
+**Sin Hackatón esta semana.**
