@@ -28,6 +28,9 @@ app.use(
     })
 );
 
+
+require('./src/routes/auth.route')(app);
+
 const db = require('./src/models');
 
 db.mongoose.connect(process.env.MONGO_URI,{}).then(async ()=>{
