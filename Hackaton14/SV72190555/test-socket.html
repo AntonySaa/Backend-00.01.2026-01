@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Socket.io</title>
+  <!-- Cargar Socket.io client desde el servidor -->
+  <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <h2>Test Socket.io</h2>
+
+  <div>
+    <label>Mi userId: <input id="myId" placeholder="64f1a2b3..." /></label>
+    <button onclick="conectar()">Conectar</button>
+  </div>
+
+  <div>
+    <label>Enviar a userId: <input id="toId" placeholder="otro userId o 'bot'" /></label>
+    <input id="texto" placeholder="Escribe un mensaje o /bot pregunta" />
+    <button onclick="enviar()">Enviar</button>
+  </div>
+
+  <div>
+    <label>ID de mensaje a editar: <input id="editId" placeholder="msgId" /></label>
+    <input id="nuevoTexto" placeholder="Nuevo texto" />
+    <button onclick="editar()">Editar</button>
+  </div>
+
+  <div>
+    <button onclick="borrarHistorial()">Borrar historial con toId</button>
+  </div>
+
+  <h3>Log de eventos:</h3>
+  <pre id="log" style="background:#111;color:#0f0;padding:10px;height:300px;overflow-y:auto;"></pre>
+
+  <script>
+    const socket = io('http://localhost:3000');
+    const log = document.getElementById('log');
+
+    function print(label, data) {
+      log.textContent += `\n[${label}] ${JSON.stringify(data, null, 2)}\n`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Eventos recibidos del servidor
+    socket.on('connect',        ()     => print('✅ Conectado', { id: socket.id }));
+    socket.on('disconnect',     ()     => print('❌ Desconectado', {}));
+    socket.on('message',        (msg)  => print('📩 message', msg));
+    socket.on('botMessage',     (msg)  => print('🤖 botMessage', msg));
+    socket.on('messageDeleted', (id)   => print('🗑 messageDeleted', { id }));
+    socket.on('messageEdited',  (data) => print('✏️ messageEdited', data));
+    socket.on('historyCleared', (uid)  => print('🧹 historyCleared', { uid }));
+    socket.on('userJoined',     (uid)  => print('👤 userJoined', { uid }));
+    socket.on('userLeft',       (uid)  => print('👋 userLeft', { uid }));
+
+    function conectar() {
+      const userId = document.getElementById('myId').value.trim();
+      socket.emit('setUser', userId);
+      print('🔑 setUser enviado', { userId });
+    }
+
+    function enviar() {
+      const to   = document.getElementById('toId').value.trim();
+      const text = document.getElementById('texto').value.trim();
+      socket.emit('sendMessage', to, text);
+      print('📤 sendMessage', { to, text });
+    }
+
+    function editar() {
+      const id   = document.getElementById('editId').value.trim();
+      const text = document.getElementById('nuevoTexto').value.trim();
+      socket.emit('editMessage', id, text);
+      print('✏️ editMessage', { id, text });
+    }
+
+    function borrarHistorial() {
+      const uid = document.getElementById('toId').value.trim();
+      socket.emit('clearHistory', uid);
+      print('🧹 clearHistory', { uid });
+    }
+  </script>
+</body>
+</html>
