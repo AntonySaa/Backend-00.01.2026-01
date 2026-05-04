@@ -1,0 +1,186 @@
+{
+  "info": {
+    "name": "Courier Online - Reto 1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Coleccion para validar el sistema de curier online (Node.js + SQL + Socket.IO)."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:3000" },
+    { "key": "aliceId", "value": "" },
+    { "key": "bobId", "value": "" },
+    { "key": "trackingCode", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1) Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "2) Login Alice",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "var json = pm.response.json();",
+              "pm.collectionVariables.set('aliceId', json.user.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"alice\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "3) Login Bob",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "var json = pm.response.json();",
+              "pm.collectionVariables.set('bobId', json.user.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"bob\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "4) Crear Paquete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+              "var json = pm.response.json();",
+              "pm.collectionVariables.set('trackingCode', json.package.tracking_code);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sender\": \"Tienda Central\",\n  \"recipient\": \"Carlos Perez\",\n  \"destinationAddress\": \"Av. Universitaria 1234\",\n  \"userId\": {{aliceId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/packages",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "packages"]
+        }
+      }
+    },
+    {
+      "name": "5) Registrar Mensaje",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": {{aliceId}},\n  \"message\": \"Paquete en camino al punto de entrega\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/packages/{{trackingCode}}/messages",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "packages", "{{trackingCode}}", "messages"]
+        }
+      }
+    },
+    {
+      "name": "6) Registrar Ubicacion",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": {{bobId}},\n  \"latitude\": -12.0464,\n  \"longitude\": -77.0428,\n  \"address\": \"Centro de distribucion Lima\",\n  \"note\": \"Salida del almacen\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/packages/{{trackingCode}}/location",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "packages", "{{trackingCode}}", "location"]
+        }
+      }
+    },
+    {
+      "name": "7) Marcar Recepcion",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": {{bobId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/packages/{{trackingCode}}/receive",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "packages", "{{trackingCode}}", "receive"]
+        }
+      }
+    },
+    {
+      "name": "8) Consultar Paquete (Final)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/packages/{{trackingCode}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "packages", "{{trackingCode}}"]
+        }
+      }
+    }
+  ]
+}

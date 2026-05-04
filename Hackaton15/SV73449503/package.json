@@ -1,0 +1,26 @@
+{
+  "name": "sv73449503",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "npm run validate",
+    "start": "node src/server.js",
+    "validate": "node scripts/validate-e2e.js",
+    "start:safe": "bash scripts/safe-mode.sh start",
+    "stop:safe": "bash scripts/safe-mode.sh stop",
+    "restart:safe": "bash scripts/safe-mode.sh restart",
+    "status:safe": "bash scripts/safe-mode.sh status"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "sqlite3": "^6.0.1"
+  }
+}
